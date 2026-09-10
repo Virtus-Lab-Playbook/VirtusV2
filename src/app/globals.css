@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/*
+  Virtus Lab — committed dark. "The deep."
+  Deep-sea revision of Blueprint §3.5. Colours are role tokens; never hard-code a hex in a component.
+*/
+@theme {
+  --color-abyss: #04171e; /* page ground */
+  --color-abyss-2: #061f28; /* raised ground */
+  --color-deep: #0b2e3a; /* surface */
+  --color-deep-2: #0f3946; /* surface, lifted */
+  --color-shelf: #22505f; /* borders, contour lines */
+  --color-shelf-dim: #163a47; /* faint rules */
+  --color-tide: #a9bfc4; /* muted text */
+  --color-seaglass: #f0f4f3; /* primary text */
+  --color-biolume: #31e0be; /* cold glow accent — life */
+  --color-biolume-dim: #1c8f7c;
+  --color-brass: #c8a24a; /* warm accent — instruments, the Gold Rule */
+
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --text-display: clamp(3rem, 1.65rem + 6.4vw, 7.25rem);
+  --text-h2: clamp(2rem, 1.4rem + 2.4vw, 3.1rem);
+  --text-h3: clamp(1.15rem, 1rem + 0.6vw, 1.4rem);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --rail-w: 3.75rem;
+  }
+
+  * {
+    border-color: var(--color-shelf-dim);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-abyss);
+    color: var(--color-seaglass);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-optical-sizing: auto;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-biolume) 30%, transparent);
+    color: var(--color-seaglass);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-biolume);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* readouts / chart annotations — the only place mono is used */
+  .readout {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--color-tide);
+    font-weight: 500;
+  }
+  .readout-caps {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.66rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  .contour-draw path {
+    stroke-dasharray: var(--len, 2000);
+    stroke-dashoffset: var(--len, 2000);
+    animation: contour-in 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .contour-draw path:nth-child(2) {
+    animation-delay: 0.12s;
+  }
+  .contour-draw path:nth-child(3) {
+    animation-delay: 0.24s;
+  }
+  .contour-draw path:nth-child(4) {
+    animation-delay: 0.36s;
+  }
+
+  /* the hero's load moment — gated so reduced-motion users get static content */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-rise {
+      opacity: 0;
+      animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .hero-rise-1 { animation-delay: 0.1s; }
+    .hero-rise-2 { animation-delay: 0.24s; }
+    .hero-rise-3 { animation-delay: 0.4s; }
+    .hero-rise-4 { animation-delay: 0.56s; }
+  }
+}
+
+@keyframes contour-in {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rail-rise {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
