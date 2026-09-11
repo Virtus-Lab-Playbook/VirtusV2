@@ -14,7 +14,7 @@ export function TrustStrip() {
               className="h-1.5 w-1.5 shrink-0 rounded-full bg-brass/80 shadow-[0_0_6px_rgba(200,162,74,0.4)]"
             />
             <p className="text-[0.84rem] font-medium tracking-tight text-tide/90 sm:text-[0.86rem]">
-              <span className="readout mr-2 text-[0.68rem] text-tide/60 sm:hidden">
+              <span className="readout mr-2 text-[0.68rem] text-tide/80 sm:hidden">
                 0{idx + 1}
               </span>
               {item}

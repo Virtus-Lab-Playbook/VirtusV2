@@ -23,7 +23,7 @@ export default function Home() {
 
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-biolume focus:px-4 focus:py-2 focus:text-abyss"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-biolume focus:px-5 focus:py-2.5 focus:text-abyss focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-seaglass"
       >
         Skip to content
       </a>
@@ -32,7 +32,7 @@ export default function Home() {
       <Announcement />
       <Nav />
 
-      <main id="main" className="relative z-[1]">
+      <main id="main" tabIndex={-1} className="relative z-[1] outline-none">
         <Hero />
         <TrustStrip />
         <Contour animate />

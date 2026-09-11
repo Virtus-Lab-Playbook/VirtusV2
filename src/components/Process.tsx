@@ -24,7 +24,7 @@ export function Process() {
                   <span className="font-display text-2xl sm:text-3xl font-normal leading-none text-brass transition-transform duration-200 group-hover:-translate-y-0.5">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span className="readout mt-2 text-[0.62rem] text-tide/50 tracking-wider">
+                  <span className="readout mt-2 text-[0.62rem] text-tide/75 tracking-wider">
                     PHASE
                   </span>
                 </div>

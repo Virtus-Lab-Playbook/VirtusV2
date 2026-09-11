@@ -52,6 +52,10 @@ export function BriefBuilder() {
   }, [lines]);
 
   const copy = async () => {
+    if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+      setCopied(false);
+      return;
+    }
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
       setCopied(true);
@@ -191,7 +195,10 @@ export function BriefBuilder() {
                     disabled={!hasAnswers}
                     className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-shelf bg-deep/30 px-4 py-2 text-sm font-medium text-tide transition-all duration-200 hover:border-tide hover:text-seaglass active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {copied ? brief.summary.copied : brief.summary.copy}
+                    <span>{copied ? brief.summary.copied : brief.summary.copy}</span>
+                    <span className="sr-only" aria-live="polite">
+                      {copied ? "Brief copied to clipboard" : ""}
+                    </span>
                   </button>
                   {hasAnswers ? (
                     <button

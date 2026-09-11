@@ -26,7 +26,7 @@ export function Services() {
               />
               <div className="mb-3 flex items-center justify-between">
                 <span className="readout text-biolume/80">P-0{idx + 1}</span>
-                <span className="readout text-tide/50 text-[0.68rem] tracking-wider">
+                <span className="readout text-tide/75 text-[0.68rem] tracking-wider">
                   STUDIO PRACTICE
                 </span>
               </div>

@@ -28,6 +28,14 @@ export function Nav() {
     document.body.style.overflow = open ? "hidden" : "";
     if (open) {
       resetSignal();
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setOpen(false);
+      };
+      window.addEventListener("keydown", onKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", onKeyDown);
+      };
     }
     return () => {
       document.body.style.overflow = "";
@@ -58,6 +66,7 @@ export function Nav() {
               <a
                 key={l.href}
                 href={l.href}
+                aria-current={isActive ? "location" : undefined}
                 className={`relative py-1 text-sm tracking-tight transition-colors duration-200 after:absolute after:bottom-0 after:left-0 after:h-px after:bg-biolume after:transition-all after:duration-250 ${
                   isActive
                     ? "text-seaglass after:w-full font-semibold"
@@ -112,6 +121,7 @@ export function Nav() {
                 <a
                   key={l.href}
                   href={l.href}
+                  aria-current={isActive ? "location" : undefined}
                   onClick={() => setOpen(false)}
                   className={`border-b border-shelf-dim/60 py-3.5 text-[0.95rem] transition-colors flex items-center justify-between ${
                     isActive

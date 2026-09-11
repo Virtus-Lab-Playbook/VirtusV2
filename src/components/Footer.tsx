@@ -38,7 +38,7 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col gap-2 border-t border-shelf-dim/70 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <span className="readout text-tide/80">{site.footer.built}</span>
-          <span className="readout text-[0.72rem] text-tide/60">
+          <span className="readout text-[0.72rem] text-tide/80">
             © {new Date().getFullYear()} {site.name}. Concept work is labelled Lab Project.
           </span>
         </div>
