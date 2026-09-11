@@ -17,7 +17,7 @@ import type {
   SignalState,
 } from "./experience-types";
 import {
-  DEPTH_DAMPING_FACTOR,
+  DEPTH_DAMPING_LAMBDA,
   DEPTH_MILESTONES,
   MAX_DEPTH_METERS,
 } from "./experience-config";
@@ -167,8 +167,9 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Damped lerp movement
-      const nextSmoothed = currentSmoothed + diff * DEPTH_DAMPING_FACTOR;
+      // Time-correct exponential damping: framerate-independent across 60Hz, 120Hz, 144Hz
+      const alpha = 1 - Math.exp(-DEPTH_DAMPING_LAMBDA * Math.min(dt, 0.1));
+      const nextSmoothed = currentSmoothed + diff * alpha;
       const velocity = (nextSmoothed - currentSmoothed) / Math.max(0.001, dt);
 
       stateRef.current = {

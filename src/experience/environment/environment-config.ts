@@ -31,31 +31,7 @@ export interface EnvironmentState {
   cameraZ: number;         // Subtle camera distance shift (7.5 -> 7.0)
 }
 
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * Math.min(1, Math.max(0, t));
-}
-
-function lerpState(a: EnvironmentState, b: EnvironmentState, t: number): EnvironmentState {
-  return {
-    topLight: lerp(a.topLight, b.topLight, t),
-    causticStrength: lerp(a.causticStrength, b.causticStrength, t),
-    rayStrength: lerp(a.rayStrength, b.rayStrength, t),
-    bloomStrength: lerp(a.bloomStrength, b.bloomStrength, t),
-    darknessMix: lerp(a.darknessMix, b.darknessMix, t),
-    particleSpeed: lerp(a.particleSpeed, b.particleSpeed, t),
-    particleOpacity: lerp(a.particleOpacity, b.particleOpacity, t),
-    coreVisibility: lerp(a.coreVisibility, b.coreVisibility, t),
-    coreZOffset: lerp(a.coreZOffset, b.coreZOffset, t),
-    coreResting: lerp(a.coreResting, b.coreResting, t),
-    floorOpacity: lerp(a.floorOpacity, b.floorOpacity, t),
-    abyssRays: lerp(a.abyssRays, b.abyssRays, t),
-    abyssEmber: lerp(a.abyssEmber, b.abyssEmber, t),
-    cameraY: lerp(a.cameraY, b.cameraY, t),
-    cameraZ: lerp(a.cameraZ, b.cameraZ, t),
-  };
-}
-
-const STATE_SURFACE: EnvironmentState = {
+export const STATE_SURFACE: EnvironmentState = {
   topLight: 1.0,
   causticStrength: 0.24,
   rayStrength: 0.16,
@@ -73,7 +49,25 @@ const STATE_SURFACE: EnvironmentState = {
   cameraZ: 7.5,
 };
 
-const STATE_TWILIGHT: EnvironmentState = {
+export const STATE_SHELF: EnvironmentState = {
+  topLight: 0.8,
+  causticStrength: 0.18,
+  rayStrength: 0.12,
+  bloomStrength: 0.28,
+  darknessMix: 0.16,
+  particleSpeed: 0.9,
+  particleOpacity: 0.57,
+  coreVisibility: 0.9,
+  coreZOffset: -0.55,
+  coreResting: 0.0,
+  floorOpacity: 0.0,
+  abyssRays: 0.0,
+  abyssEmber: 0.0,
+  cameraY: 0.0,
+  cameraZ: 7.5,
+};
+
+export const STATE_TWILIGHT: EnvironmentState = {
   topLight: 0.42,
   causticStrength: 0.08,
   rayStrength: 0.05,
@@ -91,7 +85,7 @@ const STATE_TWILIGHT: EnvironmentState = {
   cameraZ: 7.5,
 };
 
-const STATE_DESCENT: EnvironmentState = {
+export const STATE_DESCENT: EnvironmentState = {
   topLight: 0.12,
   causticStrength: 0.015,
   rayStrength: 0.01,
@@ -109,7 +103,7 @@ const STATE_DESCENT: EnvironmentState = {
   cameraZ: 7.5,
 };
 
-const STATE_DEEP: EnvironmentState = {
+export const STATE_DEEP: EnvironmentState = {
   topLight: 0.0,
   causticStrength: 0.0,
   rayStrength: 0.0,
@@ -127,7 +121,7 @@ const STATE_DEEP: EnvironmentState = {
   cameraZ: 7.45,
 };
 
-const STATE_ABYSS: EnvironmentState = {
+export const STATE_ABYSS: EnvironmentState = {
   topLight: 0.0,
   causticStrength: 0.0,
   rayStrength: 0.0,
@@ -145,7 +139,7 @@ const STATE_ABYSS: EnvironmentState = {
   cameraZ: 7.4,
 };
 
-const STATE_FOCUS: EnvironmentState = {
+export const STATE_FOCUS: EnvironmentState = {
   topLight: 0.0,
   causticStrength: 0.0,
   rayStrength: 0.0,
@@ -163,7 +157,7 @@ const STATE_FOCUS: EnvironmentState = {
   cameraZ: 7.35,
 };
 
-const STATE_FLOOR_APPROACH: EnvironmentState = {
+export const STATE_FLOOR_APPROACH: EnvironmentState = {
   topLight: 0.0,
   causticStrength: 0.0,
   rayStrength: 0.0,
@@ -181,7 +175,7 @@ const STATE_FLOOR_APPROACH: EnvironmentState = {
   cameraZ: 7.2,
 };
 
-const STATE_NEAR_FLOOR: EnvironmentState = {
+export const STATE_NEAR_FLOOR: EnvironmentState = {
   topLight: 0.0,
   causticStrength: 0.0,
   rayStrength: 0.0,
@@ -199,7 +193,7 @@ const STATE_NEAR_FLOOR: EnvironmentState = {
   cameraZ: 7.08,
 };
 
-const STATE_FLOOR: EnvironmentState = {
+export const STATE_FLOOR: EnvironmentState = {
   topLight: 0.0,
   causticStrength: 0.0,
   rayStrength: 0.0,
@@ -217,59 +211,97 @@ const STATE_FLOOR: EnvironmentState = {
   cameraZ: 7.0,
 };
 
+function smoothstep(t: number): number {
+  const c = Math.min(1, Math.max(0, t));
+  return c * c * (3 - 2 * c);
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * Math.min(1, Math.max(0, t));
+}
+
+function lerpState(a: EnvironmentState, b: EnvironmentState, t: number): EnvironmentState {
+  const s = smoothstep(t);
+  return {
+    topLight: lerp(a.topLight, b.topLight, s),
+    causticStrength: lerp(a.causticStrength, b.causticStrength, s),
+    rayStrength: lerp(a.rayStrength, b.rayStrength, s),
+    bloomStrength: lerp(a.bloomStrength, b.bloomStrength, s),
+    darknessMix: lerp(a.darknessMix, b.darknessMix, s),
+    particleSpeed: lerp(a.particleSpeed, b.particleSpeed, s),
+    particleOpacity: lerp(a.particleOpacity, b.particleOpacity, s),
+    coreVisibility: lerp(a.coreVisibility, b.coreVisibility, s),
+    coreZOffset: lerp(a.coreZOffset, b.coreZOffset, s),
+    coreResting: lerp(a.coreResting, b.coreResting, s),
+    floorOpacity: lerp(a.floorOpacity, b.floorOpacity, s),
+    abyssRays: lerp(a.abyssRays, b.abyssRays, s),
+    abyssEmber: lerp(a.abyssEmber, b.abyssEmber, s),
+    cameraY: lerp(a.cameraY, b.cameraY, s),
+    cameraZ: lerp(a.cameraZ, b.cameraZ, s),
+  };
+}
+
 /**
  * Calculates continuous, smoothly interpolated environment parameters
  * based on the current smoothed depth in meters (0 to 3800 m).
+ *
+ * Guarantees mathematical C0 continuity and C1 smooth transition across all depth milestones.
  */
 export function getEnvironmentState(depth: number): EnvironmentState {
-  // 1. Surface: 0 to 210 m
+  // 1. Surface -> Continental Shelf: 0 to 210 m
   if (depth <= 210) {
     const t = depth / 210;
-    return lerpState(STATE_SURFACE, STATE_TWILIGHT, t * 0.35);
+    return lerpState(STATE_SURFACE, STATE_SHELF, t);
   }
 
-  // 2. Twilight: 210 to 1,200 m
+  // 2. Continental Shelf -> Twilight: 210 to 700 m
+  if (depth <= 700) {
+    const t = (depth - 210) / (700 - 210);
+    return lerpState(STATE_SHELF, STATE_TWILIGHT, t);
+  }
+
+  // 3. Twilight -> Descent: 700 to 1,200 m
   if (depth <= 1200) {
-    const t = (depth - 210) / (1200 - 210);
+    const t = (depth - 700) / (1200 - 700);
     return lerpState(STATE_TWILIGHT, STATE_DESCENT, t);
   }
 
-  // 3. Descent: 1,200 to 1,600 m
+  // 4. Descent -> Deep: 1,200 to 1,600 m
   if (depth <= 1600) {
     const t = (depth - 1200) / (1600 - 1200);
     return lerpState(STATE_DESCENT, STATE_DEEP, t);
   }
 
-  // 4. Deep: 1,600 to 2,400 m
+  // 5. Deep -> Abyss: 1,600 to 2,400 m
   if (depth <= 2400) {
     const t = (depth - 1600) / (2400 - 1600);
     return lerpState(STATE_DEEP, STATE_ABYSS, t);
   }
 
-  // 5. Abyss: 2,400 to 2,800 m
+  // 6. Abyss -> Brief Focus: 2,400 to 2,800 m
   if (depth <= 2800) {
     const t = (depth - 2400) / (2800 - 2400);
     return lerpState(STATE_ABYSS, STATE_FOCUS, t);
   }
 
-  // 6. Brief Focus: 2,800 to 3,100 m
+  // 7. Brief Focus -> Floor Approach: 2,800 to 3,100 m
   if (depth <= 3100) {
     const t = (depth - 2800) / (3100 - 2800);
     return lerpState(STATE_FOCUS, STATE_FLOOR_APPROACH, t);
   }
 
-  // 7. Floor Approach: 3,100 to 3,600 m
+  // 8. Floor Approach -> Near Floor: 3,100 to 3,600 m
   if (depth <= 3600) {
     const t = (depth - 3100) / (3600 - 3100);
     return lerpState(STATE_FLOOR_APPROACH, STATE_NEAR_FLOOR, t);
   }
 
-  // 8. Near Floor: 3,600 to 3,780 m
+  // 9. Near Floor -> Floor: 3,600 to 3,780 m
   if (depth <= 3780) {
     const t = (depth - 3600) / (3780 - 3600);
     return lerpState(STATE_NEAR_FLOOR, STATE_FLOOR, t);
   }
 
-  // 9. Floor: 3,780 to 3,800 m
+  // 10. Ocean Floor: 3,780 to 3,800 m
   return STATE_FLOOR;
 }

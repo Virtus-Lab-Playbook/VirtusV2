@@ -33,7 +33,13 @@ export const QUALITY_DPR_CAPS: Record<SceneQuality, number> = {
 };
 
 /**
- * Damping factor for smooth scroll-driven camera & visual depth motion.
- * Lower = more viscous/inertia-heavy damping, Higher = snappier tracking.
+ * Exponential decay lambda for framerate-independent depth smoothing.
+ * Produces consistent physical inertia across 60Hz, 120Hz, and 144Hz displays.
+ */
+export const DEPTH_DAMPING_LAMBDA = 3.5;
+
+/**
+ * Legacy per-frame damping factor kept for backward compatibility.
  */
 export const DEPTH_DAMPING_FACTOR = 0.055;
+
