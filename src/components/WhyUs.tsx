@@ -19,15 +19,6 @@ export function WhyUs() {
               </span>
             </div>
             <h2 className="text-h2 text-seaglass">{site.why.title}</h2>
-            <p className="mt-5 text-[1.05rem] leading-relaxed text-tide">
-              Built on strict operational standards, coordinated accountability, and
-              disciplined delivery abroad.
-            </p>
-            <div className="mt-8 hidden border-t border-shelf-dim/70 pt-6 lg:block">
-              <span className="readout text-[0.68rem] tracking-wider text-tide/60">
-                OPERATIONAL DISCIPLINE
-              </span>
-            </div>
           </div>
 
           {/* Right: Operational Principle Rows */}

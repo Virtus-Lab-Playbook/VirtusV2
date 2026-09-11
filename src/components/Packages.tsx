@@ -50,7 +50,7 @@ export function Packages() {
                     : "border border-shelf bg-deep/20 text-seaglass hover:border-biolume hover:text-biolume hover:bg-deep/40"
                 }`}
               >
-                Build your brief
+                {site.nav.action.label}
               </a>
             </div>
           ))}
