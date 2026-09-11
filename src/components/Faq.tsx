@@ -10,6 +10,7 @@ export function Faq() {
           {site.faq.items.map((item) => (
             <details
               key={item.q}
+              name="virtus-faq"
               className="group border-b border-shelf-dim/80 py-5 transition-colors duration-200 hover:bg-deep/20 [&_summary::-webkit-details-marker]:hidden"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-2 py-1 text-[1.04rem] font-medium text-seaglass transition-colors duration-200 hover:text-biolume focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-biolume">
