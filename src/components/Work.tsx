@@ -10,27 +10,90 @@ const WORK_START_DEPTH = 1600;
 const WORK_NEXT_SECTION_DEPTH = 2400;
 
 /**
- * Finish horizontal travel before the sticky stage releases.
- * The remaining pinned distance becomes a short visual hold on the final project.
+ * Choreography:
+ *
+ * - small global opening hold so Project 01 is readable before movement begins
+ * - each project has a local dwell before/after its transition
+ * - small final hold so Project 05 settles before sticky release
+ *
+ * All timing is scroll-distance based, not time based.
+ * Therefore:
+ * - no delayed catch-up after scrolling stops
+ * - reverse scroll naturally reverses the animation
  */
-const TRACK_COMPLETE_BEFORE_RELEASE = 0.9;
+const OPENING_HOLD = 0.045;
+const FINAL_HOLD = 0.06;
+const SEGMENT_TRANSITION_START = 0.1;
+const SEGMENT_TRANSITION_END = 0.9;
 
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
+}
+
+function smoothstep(value: number): number {
+  const t = clamp01(value);
+  return t * t * (3 - 2 * t);
 }
 
 function formatIndex(index: number): string {
   return String(index + 1).padStart(2, "0");
 }
 
+/**
+ * Converts 0..1 pinned scroll progress into a continuous project position:
+ *
+ * 0.0 = Project 01 aligned
+ * 1.0 = Project 02 aligned
+ * 2.0 = Project 03 aligned
+ * ...
+ *
+ * Each integer position is a deliberate visual resting point.
+ */
+function getProjectPosition(
+  pinnedProgress: number,
+  projectCount: number,
+): number {
+  if (projectCount <= 1) return 0;
+
+  if (pinnedProgress <= OPENING_HOLD) {
+    return 0;
+  }
+
+  if (pinnedProgress >= 1 - FINAL_HOLD) {
+    return projectCount - 1;
+  }
+
+  const motionProgress = clamp01(
+    (pinnedProgress - OPENING_HOLD) /
+      (1 - OPENING_HOLD - FINAL_HOLD),
+  );
+
+  const transitionCount = projectCount - 1;
+  const scaled = motionProgress * transitionCount;
+
+  const segment = Math.min(
+    transitionCount - 1,
+    Math.floor(scaled),
+  );
+
+  const localProgress = scaled - segment;
+
+  const transitionProgress = clamp01(
+    (localProgress - SEGMENT_TRANSITION_START) /
+      (SEGMENT_TRANSITION_END - SEGMENT_TRANSITION_START),
+  );
+
+  return segment + smoothstep(transitionProgress);
+}
+
 type WorkMetrics = {
-  travel: number;
-  trackEndDepth: number;
+  cardOffsets: number[];
+  releaseDepth: number;
 };
 
 const initialMetrics: WorkMetrics = {
-  travel: 0,
-  trackEndDepth: 2080,
+  cardOffsets: [],
+  releaseDepth: 2250,
 };
 
 export function Work() {
@@ -41,7 +104,8 @@ export function Work() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const [metrics, setMetrics] = useState<WorkMetrics>(initialMetrics);
+  const [metrics, setMetrics] =
+    useState<WorkMetrics>(initialMetrics);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -56,59 +120,51 @@ export function Work() {
         track.querySelectorAll<HTMLElement>("[data-work-card]"),
       );
 
-      const lastCard = cards.at(-1);
+      const nextOffsets = cards.map((card) =>
+        Math.max(0, card.offsetLeft),
+      );
 
-      /*
-       * Do not use scrollWidth - clientWidth here.
-       *
-       * We want the final project to reach the same lead position as the first
-       * project, not merely become fully contained at the right edge.
-       */
-      const nextTravel = lastCard
-        ? Math.max(0, lastCard.offsetLeft)
-        : Math.max(0, track.scrollWidth - viewport.clientWidth);
-
-      /*
-       * The global depth system maps 1600 -> 2400 between #work and #why-us.
-       *
-       * A sticky child stops being pinned before the section itself ends:
-       *
-       * sticky scroll distance = sectionHeight - stickyHeight
-       *
-       * Convert that physical release point back into the same depth interval,
-       * then complete the horizontal rail slightly before release so the final
-       * project receives a brief dwell.
-       */
       const sectionHeight = Math.max(1, section.offsetHeight);
       const stickyHeight = Math.min(
         sectionHeight,
         Math.max(1, sticky.offsetHeight),
       );
 
+      /**
+       * sticky scroll distance:
+       *
+       * sectionHeight - stickyHeight
+       *
+       * Convert that real physical release position back into the same
+       * 1600 -> 2400 conceptual depth interval used by ExperienceContext.
+       */
       const pinnedFraction = clamp01(
         (sectionHeight - stickyHeight) / sectionHeight,
       );
 
-      const releaseDepth =
+      const nextReleaseDepth =
         WORK_START_DEPTH +
-        (WORK_NEXT_SECTION_DEPTH - WORK_START_DEPTH) * pinnedFraction;
-
-      const nextTrackEndDepth =
-        WORK_START_DEPTH +
-        (releaseDepth - WORK_START_DEPTH) *
-          TRACK_COMPLETE_BEFORE_RELEASE;
+        (WORK_NEXT_SECTION_DEPTH - WORK_START_DEPTH) *
+          pinnedFraction;
 
       setMetrics((current) => {
-        if (
-          Math.abs(current.travel - nextTravel) < 0.5 &&
-          Math.abs(current.trackEndDepth - nextTrackEndDepth) < 0.5
-        ) {
+        const offsetsChanged =
+          current.cardOffsets.length !== nextOffsets.length ||
+          current.cardOffsets.some(
+            (offset, index) =>
+              Math.abs(offset - (nextOffsets[index] ?? 0)) > 0.5,
+          );
+
+        const releaseChanged =
+          Math.abs(current.releaseDepth - nextReleaseDepth) > 0.5;
+
+        if (!offsetsChanged && !releaseChanged) {
           return current;
         }
 
         return {
-          travel: nextTravel,
-          trackEndDepth: nextTrackEndDepth,
+          cardOffsets: nextOffsets,
+          releaseDepth: nextReleaseDepth,
         };
       });
     };
@@ -129,21 +185,47 @@ export function Work() {
     };
   }, []);
 
-  const depthSpan = Math.max(
+  const pinnedDepthSpan = Math.max(
     1,
-    metrics.trackEndDepth - WORK_START_DEPTH,
+    metrics.releaseDepth - WORK_START_DEPTH,
   );
 
-  const progress = clamp01(
-    (rawDepth - WORK_START_DEPTH) / depthSpan,
+  const pinnedProgress = clamp01(
+    (rawDepth - WORK_START_DEPTH) / pinnedDepthSpan,
   );
 
-  const translateX = metrics.travel * progress;
   const projectCount = site.work.projects.length;
+
+  const projectPosition = getProjectPosition(
+    pinnedProgress,
+    projectCount,
+  );
+
+  const lowerIndex = Math.min(
+    projectCount - 1,
+    Math.floor(projectPosition),
+  );
+
+  const upperIndex = Math.min(
+    projectCount - 1,
+    lowerIndex + 1,
+  );
+
+  const localCardProgress = projectPosition - lowerIndex;
+
+  const lowerOffset =
+    metrics.cardOffsets[lowerIndex] ?? 0;
+
+  const upperOffset =
+    metrics.cardOffsets[upperIndex] ?? lowerOffset;
+
+  const translateX =
+    lowerOffset +
+    (upperOffset - lowerOffset) * localCardProgress;
 
   const activeIndex = Math.min(
     projectCount - 1,
-    Math.max(0, Math.round(progress * (projectCount - 1))),
+    Math.max(0, Math.round(projectPosition)),
   );
 
   return (
@@ -153,7 +235,10 @@ export function Work() {
       aria-labelledby="work-title"
       className="work-showcase relative scroll-mt-24"
     >
-      <div ref={stickyRef} className="work-showcase__sticky">
+      <div
+        ref={stickyRef}
+        className="work-showcase__sticky"
+      >
         <Container className="flex h-full min-h-0 flex-col pt-16 pb-6 sm:pt-20 sm:pb-8">
           <header
             data-reveal
@@ -162,6 +247,7 @@ export function Work() {
             <div className="max-w-[48rem]">
               <div className="mb-3 flex items-center gap-4">
                 <GoldRule />
+
                 <span className="readout inline-flex items-center gap-2 text-tide/90">
                   <span
                     aria-hidden
@@ -190,7 +276,11 @@ export function Work() {
               <span className="font-mono text-2xl font-semibold tabular-nums text-biolume">
                 {formatIndex(activeIndex)}
               </span>
-              <span className="readout text-tide/55">/</span>
+
+              <span className="readout text-tide/55">
+                /
+              </span>
+
               <span className="readout tabular-nums text-tide/75">
                 {String(projectCount).padStart(2, "0")}
               </span>
@@ -243,10 +333,12 @@ export function Work() {
                         <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-biolume">
                           {formatIndex(index)}
                         </span>
+
                         <span
                           aria-hidden
                           className="h-1 w-1 rounded-full bg-brass"
                         />
+
                         <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-tide/75">
                           {project.kind}
                         </span>
