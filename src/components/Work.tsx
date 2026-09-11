@@ -26,13 +26,43 @@ const FINAL_HOLD = 0.06;
 const SEGMENT_TRANSITION_START = 0.1;
 const SEGMENT_TRANSITION_END = 0.9;
 
+/**
+ * Horizontal work motion uses the existing global smoothed depth signal.
+ *
+ * 0 = completely raw / immediate
+ * 1 = completely smoothed / floaty
+ *
+ * 0.68 keeps enough immediate response while removing mouse-wheel stepping.
+ */
+const WORK_DEPTH_SMOOTHING = 0.68;
+
+/**
+ * Finish horizontal choreography before the physical sticky release.
+ *
+ * This provides enough safety for the smoothed depth signal to catch up,
+ * while preserving the final Project 05 dwell.
+ */
+const MOTION_FINISH_FRACTION = 0.88;
+
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
-function smoothstep(value: number): number {
+/**
+ * Quintic smootherstep.
+ *
+ * Velocity and acceleration both approach zero at the beginning and end,
+ * so project transitions feel less mechanical than cubic smoothstep.
+ */
+function smootherstep(value: number): number {
   const t = clamp01(value);
-  return t * t * (3 - 2 * t);
+
+  return (
+    t *
+    t *
+    t *
+    (t * (t * 6 - 15) + 10)
+  );
 }
 
 function formatIndex(index: number): string {
@@ -83,7 +113,7 @@ function getProjectPosition(
       (SEGMENT_TRANSITION_END - SEGMENT_TRANSITION_START),
   );
 
-  return segment + smoothstep(transitionProgress);
+  return segment + smootherstep(transitionProgress);
 }
 
 type WorkMetrics = {
@@ -97,7 +127,7 @@ const initialMetrics: WorkMetrics = {
 };
 
 export function Work() {
-  const { rawDepth } = useExperience();
+  const { rawDepth, smoothedDepth } = useExperience();
 
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -190,8 +220,28 @@ export function Work() {
     metrics.releaseDepth - WORK_START_DEPTH,
   );
 
+  /**
+   * Keep the Work rail responsive to the real scroll position while borrowing
+   * inertia from the site's existing depth smoother.
+   *
+   * This is intentionally NOT another smooth-scroll system.
+   */
+  const motionDepth =
+    rawDepth +
+    (smoothedDepth - rawDepth) * WORK_DEPTH_SMOOTHING;
+
+  /**
+   * Because smoothedDepth trails rawDepth slightly, complete the horizontal
+   * choreography before the physical sticky release. The remainder becomes
+   * the final Project 05 hold.
+   */
+  const motionDepthSpan = Math.max(
+    1,
+    pinnedDepthSpan * MOTION_FINISH_FRACTION,
+  );
+
   const pinnedProgress = clamp01(
-    (rawDepth - WORK_START_DEPTH) / pinnedDepthSpan,
+    (motionDepth - WORK_START_DEPTH) / motionDepthSpan,
   );
 
   const projectCount = site.work.projects.length;
