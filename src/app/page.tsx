@@ -1,4 +1,3 @@
-import { Announcement } from "@/components/Announcement";
 import { Nav } from "@/components/Nav";
 import { DepthRail } from "@/components/DepthRail";
 import { Hero } from "@/components/Hero";
@@ -29,7 +28,6 @@ export default function Home() {
       </a>
 
       <DepthRail />
-      <Announcement />
       <Nav />
 
       <main id="main" tabIndex={-1} className="relative z-[1] outline-none">

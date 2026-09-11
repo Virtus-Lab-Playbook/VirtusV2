@@ -10,9 +10,9 @@ import { MAX_DEPTH_METERS } from "@/experience/experience-config";
  * Now powered directly by the centralized section-aware Depth System.
  */
 export function DepthRail() {
-  const { rawDepth, smoothedDepth } = useExperience();
+  const { rawDepth } = useExperience();
 
-  const progress = Math.min(1, Math.max(0, smoothedDepth / MAX_DEPTH_METERS));
+  const progress = Math.min(1, Math.max(0, rawDepth / MAX_DEPTH_METERS));
   const depth = Math.round(rawDepth / 10) * 10;
   const ticks = [0, 1000, 2000, 3000, MAX_DEPTH_METERS];
 
@@ -38,7 +38,7 @@ export function DepthRail() {
           />
         ))}
         <span
-          className="absolute -left-[3px] h-[7px] w-[7px] -translate-y-1/2 rounded-full bg-biolume shadow-[0_0_10px_2px_var(--color-biolume)] transition-[top] duration-150 ease-out"
+          className="absolute -left-[3px] h-[7px] w-[7px] -translate-y-1/2 rounded-full bg-biolume shadow-[0_0_10px_2px_var(--color-biolume)]"
           style={{ top: `${progress * 100}%` }}
         />
       </div>

@@ -14,7 +14,8 @@ export const site = {
     terms: "#terms",
   },
 
-  announcement: "Booking studio projects for Q1 2026 — a few slots open.",
+  availability: "Accepting new projects",
+  announcement: "Accepting new projects",
 
   nav: {
     links: [

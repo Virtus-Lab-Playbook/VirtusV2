@@ -13,11 +13,21 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto w-full max-w-[74rem] px-5 sm:px-8 lg:pl-[calc(var(--rail-w)+2rem)] lg:pr-10">
         <div className="max-w-[46rem] lg:max-w-[44rem]">
-          <div className="hero-rise hero-rise-1 mb-7 inline-flex items-center gap-3 rounded-full border border-shelf/80 bg-deep/60 px-4 py-1.5 backdrop-blur-md shadow-sm">
-            <span aria-hidden className="block h-px w-6 bg-brass" />
-            <span className="font-display text-sm sm:text-base italic text-brass tracking-wide">
-              {site.tagline}
-            </span>
+          <div className="hero-rise hero-rise-1 mb-7 flex flex-wrap items-center gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-biolume/30 bg-biolume/10 px-3 py-1 text-[0.72rem] tracking-wider text-biolume uppercase font-medium backdrop-blur-md shadow-sm">
+              <span
+                aria-hidden
+                className="h-1.5 w-1.5 rounded-full bg-biolume shadow-[0_0_8px_1px_var(--color-biolume)] animate-pulse"
+              />
+              <span>{site.availability}</span>
+            </div>
+
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-shelf/80 bg-deep/60 px-3.5 py-1 backdrop-blur-md shadow-sm">
+              <span aria-hidden className="block h-px w-4 bg-brass" />
+              <span className="font-display text-xs sm:text-sm italic text-brass tracking-wide">
+                {site.tagline}
+              </span>
+            </div>
           </div>
 
           <h1 className="hero-rise hero-rise-2 text-display text-seaglass">
