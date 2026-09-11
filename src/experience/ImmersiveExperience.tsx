@@ -8,7 +8,7 @@ import { getEnvironmentState } from "./environment/environment-config";
 import { createDeepAtmosphere } from "./environment/DeepAtmosphere";
 import { createMarineSnow } from "./environment/MarineSnow";
 import { createAbyssFloor } from "./environment/AbyssFloor";
-import { createVirtusCore } from "./objects/VirtusCore";
+import { createVirtusCommandHub } from "./objects/VirtusCommandHub";
 
 /**
  * Three subtle environmental project beacons at bathypelagic depth (1600 m).
@@ -151,24 +151,33 @@ export function ImmersiveExperience() {
     const camera = new THREE.PerspectiveCamera(52, initW / initH, 0.1, 100);
     camera.position.set(0, 0, 7.5);
 
-    // --- 3. Lighting Rig (Oceanic & Restrained) ---
-    const keyLight = new THREE.DirectionalLight(0xf0f4f3, 0.95);
-    keyLight.position.set(4, 5, 6);
+    // --- 3. Lighting Rig (Oceanic & Restrained Edge Readability) ---
+    // Soft cool key light from front-top-right
+    const keyLight = new THREE.DirectionalLight(0xdcebf0, 0.95);
+    keyLight.position.set(3.5, 4.5, 5.0);
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0x0b2e3a, 0.55);
+    // Deep oceanic fill light from lower left
+    const fillLight = new THREE.DirectionalLight(0x0b2e3a, 0.50);
     fillLight.position.set(-4, -2, 3);
     scene.add(fillLight);
 
-    const rimLight = new THREE.PointLight(0xc8a24a, 0.4, 14);
-    rimLight.position.set(3, -2, 4);
+    // Rear-right rim light: skims outer ring and trunnion thickness from behind
+    const rimLight = new THREE.DirectionalLight(0xa5d8e6, 0.70);
+    rimLight.position.set(4.5, 2.5, -3.0);
     scene.add(rimLight);
 
-    const ambientLight = new THREE.AmbientLight(0x04171e, 0.45);
+    // Restrained warm brass accent reflection
+    const brassLight = new THREE.PointLight(0xc8a24a, 0.35, 12);
+    brassLight.position.set(-3.0, -2.5, 3.5);
+    scene.add(brassLight);
+
+    // Low ambient to preserve deep contrast and shadow depth
+    const ambientLight = new THREE.AmbientLight(0x04171e, 0.28);
     scene.add(ambientLight);
 
-    // --- 4. Signature Virtus Core Object ---
-    const core = createVirtusCore(quality);
+    // --- 4. Signature Virtus Command Hub Object ---
+    const core = createVirtusCommandHub(quality);
     scene.add(core.group);
 
     // --- 5. Atmospheric Marine Snow Particle Field ---
@@ -284,9 +293,10 @@ export function ImmersiveExperience() {
 
       // Dynamic lighting response based on depth & terminal state
       keyLight.intensity = 0.95 * env.topLight;
-      fillLight.intensity = 0.55 * (1.0 - env.darknessMix * 0.3);
-      rimLight.intensity = 0.2 + env.abyssRays * 0.45;
-      ambientLight.intensity = 0.45 * (1.0 - env.darknessMix * 0.4);
+      fillLight.intensity = 0.50 * (1.0 - env.darknessMix * 0.3);
+      rimLight.intensity = (0.60 + env.abyssRays * 0.40) * Math.max(0.2, env.coreVisibility);
+      brassLight.intensity = (0.25 + env.abyssEmber * 0.35) * env.coreVisibility;
+      ambientLight.intensity = 0.28 * (1.0 - env.darknessMix * 0.4);
 
       // Two-pass rendering on ONE WebGLRenderer
       renderer.clear();
@@ -336,6 +346,8 @@ export function ImmersiveExperience() {
       keyLight.dispose();
       fillLight.dispose();
       rimLight.dispose();
+      brassLight.dispose();
+      ambientLight.dispose();
       renderer.dispose();
     };
 
