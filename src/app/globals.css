@@ -52,26 +52,39 @@
     overflow-x: hidden;
   }
 
-  h1,
-  h2,
-  h3 {
+  h1 {
     font-family: var(--font-display);
     font-weight: 400;
     font-optical-sizing: auto;
-    line-height: 1.05;
-    letter-spacing: -0.015em;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-optical-sizing: auto;
+    line-height: 1.08;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
   ::selection {
-    background: color-mix(in oklab, var(--color-biolume) 30%, transparent);
+    background: color-mix(in oklab, var(--color-biolume) 28%, transparent);
     color: var(--color-seaglass);
   }
 
   :focus-visible {
     outline: 2px solid var(--color-biolume);
     outline-offset: 3px;
-    border-radius: 2px;
+    border-radius: 4px;
   }
 
   a {
@@ -79,11 +92,11 @@
     text-decoration: none;
   }
 
-  /* readouts / chart annotations — the only place mono is used */
+  /* readouts / chart annotations — reserved exclusively for telemetry & data */
   .readout {
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     color: var(--color-tide);
     font-weight: 500;
   }

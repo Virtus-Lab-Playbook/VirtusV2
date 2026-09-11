@@ -38,19 +38,22 @@ export function SectionHeader({
   id?: string;
 }) {
   return (
-    <header className="mb-14 max-w-[46ch]" id={id}>
-      <div className="mb-6 flex items-center gap-4">
+    <header className="mb-12 sm:mb-16 max-w-[48ch]" id={id}>
+      <div className="mb-5 flex items-center gap-4">
         <GoldRule />
         {depth ? (
-          <span className="readout inline-flex items-center gap-2">
-            <span aria-hidden className="h-1 w-1 rounded-full bg-tide/60" />
+          <span className="readout inline-flex items-center gap-2 text-tide/90">
+            <span
+              aria-hidden
+              className="h-1.5 w-1.5 rounded-full bg-biolume shadow-[0_0_8px_1px_var(--color-biolume)]"
+            />
             {depth}
           </span>
         ) : null}
       </div>
-      <h2 className="text-h2">{title}</h2>
+      <h2 className="text-h2 text-seaglass">{title}</h2>
       {intro ? (
-        <p className="mt-5 text-[1.06rem] leading-relaxed text-tide">{intro}</p>
+        <p className="mt-4 text-[1.05rem] leading-relaxed text-tide max-w-[50ch]">{intro}</p>
       ) : null}
     </header>
   );
@@ -70,18 +73,18 @@ export function Button({
   className = "",
 }: ButtonProps) {
   const base =
-    "group inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all duration-300";
+    "group inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full px-6 py-3 text-sm font-medium tracking-tight transition-all duration-200 active:scale-[0.98]";
   const styles =
     variant === "primary"
-      ? "bg-biolume text-abyss shadow-[0_0_0_0_var(--color-biolume)] hover:bg-seaglass hover:shadow-[0_0_28px_-6px_var(--color-biolume)]"
-      : "border border-shelf text-seaglass hover:border-biolume hover:text-biolume";
+      ? "bg-biolume text-abyss hover:bg-seaglass hover:shadow-[0_0_24px_-4px_var(--color-biolume)]"
+      : "border border-shelf bg-deep/20 text-seaglass hover:border-biolume hover:text-biolume hover:bg-deep/40";
   return (
     <a href={href} className={`${base} ${styles} ${className}`}>
       {children}
       {variant === "secondary" ? (
         <span
           aria-hidden
-          className="transition-transform duration-300 group-hover:translate-x-1"
+          className="transition-transform duration-200 group-hover:translate-x-1"
         >
           →
         </span>

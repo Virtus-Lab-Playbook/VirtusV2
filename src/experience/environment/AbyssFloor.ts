@@ -95,8 +95,9 @@ export function createAbyssFloor(quality: SceneQuality): AbyssFloorInstance {
 
   const update = (time: number, env: EnvironmentState) => {
     mat.uniforms.uOpacity.value = env.floorOpacity;
-    // Gentle spatial breathing of floor contours
-    mesh.position.y = -2.6 + Math.sin(time * 0.15) * 0.04;
+    // Spatial breathing of floor contours settles into quiet stillness at terminal depth
+    const breathingAmplitude = 0.04 * (1.0 - env.coreResting * 0.85);
+    mesh.position.y = -2.6 + Math.sin(time * 0.15) * breathingAmplitude;
   };
 
   const dispose = () => {
