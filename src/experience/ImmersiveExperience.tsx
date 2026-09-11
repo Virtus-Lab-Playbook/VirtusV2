@@ -6,6 +6,7 @@ import { useExperience } from "./ExperienceContext";
 import { getEnvironmentState } from "./environment/environment-config";
 import { createDeepAtmosphere } from "./environment/DeepAtmosphere";
 import { createMarineSnow } from "./environment/MarineSnow";
+import { createAbyssFloor } from "./environment/AbyssFloor";
 import { createVirtusCore } from "./objects/VirtusCore";
 
 /**
@@ -102,7 +103,11 @@ export function ImmersiveExperience() {
     const marineSnow = createMarineSnow(quality);
     scene.add(marineSnow.points);
 
-    // --- 6. Shared Pointer & Resize Listeners ---
+    // --- 6. Bathymetric Abyssal Seafloor ---
+    const abyssFloor = createAbyssFloor(quality);
+    scene.add(abyssFloor.mesh);
+
+    // --- 7. Shared Pointer & Resize Listeners ---
     const pointer = { x: 0, y: 0 };
     const pointerTarget = { x: 0, y: 0 };
     let rafId = 0;
@@ -128,7 +133,7 @@ export function ImmersiveExperience() {
     };
     window.addEventListener("resize", onResize);
 
-    // --- 7. Unified Render Loop ---
+    // --- 8. Unified Render Loop ---
     const render = (now: number) => {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
@@ -141,12 +146,19 @@ export function ImmersiveExperience() {
       pointer.x += (pointerTarget.x - pointer.x) * Math.min(1, dt * 3.5);
       pointer.y += (pointerTarget.y - pointer.y) * Math.min(1, dt * 3.5);
 
-      // Subtle camera parallax (Desktop HIGH only)
+      // Subtle camera parallax and vertical descent choreography
+      const baseY = env.cameraY;
+      const baseZ = env.cameraZ;
       if (quality === "HIGH") {
         camera.position.x = pointer.x * 0.16;
-        camera.position.y = pointer.y * 0.12;
+        camera.position.y = baseY + pointer.y * 0.12;
+        camera.position.z = baseZ;
+      } else {
+        camera.position.x = 0;
+        camera.position.y = baseY;
+        camera.position.z = baseZ;
       }
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(0, baseY * 0.4, 0);
 
       // Update atmospheric shader pass
       atmosphere.update(now * 0.001, env, pointer, vp);
@@ -154,12 +166,17 @@ export function ImmersiveExperience() {
       // Update marine snow particles
       marineSnow.update(dt, now * 0.001, env);
 
+      // Update bathymetric seafloor
+      abyssFloor.update(now * 0.001, env);
+
       // Update Virtus Core
       core.update(dt, now * 0.001, currentDepth, pointer, vp);
 
-      // Dynamic lighting response based on depth
+      // Dynamic lighting response based on depth & terminal state
       keyLight.intensity = 0.95 * env.topLight;
       fillLight.intensity = 0.55 * (1.0 - env.darknessMix * 0.3);
+      rimLight.intensity = 0.2 + env.abyssRays * 0.45;
+      ambientLight.intensity = 0.45 * (1.0 - env.darknessMix * 0.4);
 
       // Two-pass rendering on ONE WebGLRenderer
       renderer.clear();
@@ -189,7 +206,7 @@ export function ImmersiveExperience() {
     // Start render loop
     rafId = requestAnimationFrame(loop);
 
-    // --- 8. Complete Resource Disposal ---
+    // --- 9. Complete Resource Disposal ---
     cleanup = () => {
       running = false;
       cancelAnimationFrame(rafId);
@@ -203,6 +220,7 @@ export function ImmersiveExperience() {
 
       atmosphere.dispose();
       marineSnow.dispose();
+      abyssFloor.dispose();
       core.dispose();
       keyLight.dispose();
       fillLight.dispose();

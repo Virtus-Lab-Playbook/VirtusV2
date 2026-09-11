@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import type { DepthState, SceneQuality } from "../experience-types";
+import { getEnvironmentState } from "../environment/environment-config";
 
 export interface VirtusCoreInstance {
   group: THREE.Group;
@@ -16,13 +17,16 @@ export interface VirtusCoreInstance {
 /**
  * Procedural Virtus Core
  *
- * Represents precision, technology, oceanographic instrumentation,
- * and high-craft industrial design.
+ * Signature oceanographic instrument object:
+ * - Outer instrument ring with cardinal brass ticks
+ * - Inner tilted gimbal ring with axle pivots
+ * - Central smoky faceted octahedron with inner biolume spark
  *
- * Visual balance:
- * - 85% Dark metallic (abyss/deep tones)
- * - 10% Instrument brass detail
- * - 5% Biolume cold glow emission
+ * Phase 4 Full Descent Journey:
+ * - Surface (0–210 m): Prominent in Hero right visual area
+ * - Descent/Abyss (500–3100 m): Recedes deep into distance
+ * - Floor Approach (3100–3600 m): Returns gradually
+ * - Final CTA / Floor (3780–3800 m): Arrives at final resting orientation opposite CTA text
  */
 export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
   const group = new THREE.Group();
@@ -119,7 +123,7 @@ export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
   const innerRingMesh = new THREE.Mesh(innerRingGeo, innerDarkMat);
   innerRingGroup.add(innerRingMesh);
 
-  // Gimbal axle pivots (brass connectors)
+  // Gimbal axle pivots
   const pivotGeo = trackGeo(new THREE.CylinderGeometry(0.018, 0.018, 0.18, 12));
   const topPivot = new THREE.Mesh(pivotGeo, brassMat);
   topPivot.position.set(0, 1.25, 0);
@@ -129,7 +133,6 @@ export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
   btmPivot.position.set(0, -1.25, 0);
   innerRingGroup.add(btmPivot);
 
-  // Initial tilt on gimbal
   innerRingGroup.rotation.x = Math.PI * 0.28;
   group.add(innerRingGroup);
 
@@ -140,7 +143,6 @@ export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
   const coreMesh = new THREE.Mesh(coreGeo, smokyFacetMat);
   coreGroup.add(coreMesh);
 
-  // Inner bioluminescent spark
   const innerSparkGeo = trackGeo(new THREE.OctahedronGeometry(0.2, 0));
   const innerSparkMesh = new THREE.Mesh(innerSparkGeo, biolumeInnerMat);
   coreGroup.add(innerSparkMesh);
@@ -151,13 +153,6 @@ export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
   let velocityLag = 0;
   const enablePointer = quality === "HIGH" || quality === "MEDIUM";
 
-  /**
-   * Per-frame update routine:
-   * - Very slow idle mechanical rotation
-   * - Damped pointer orientation reaction (HIGH / MEDIUM only)
-   * - Inertial scroll velocity lag
-   * - Hero positioning & depth-based recession
-   */
   const update = (
     dt: number,
     time: number,
@@ -165,74 +160,64 @@ export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
     pointer: { x: number; y: number },
     viewport: { width: number; height: number },
   ) => {
-    // 1. Scroll velocity reaction (subtle inertial ring deflection)
+    const env = getEnvironmentState(depthState.smoothedDepth);
+
+    // 1. Scroll velocity reaction (subtle ring deflection)
     const targetLag = Math.min(0.25, Math.max(-0.25, depthState.velocity * 0.0003));
     velocityLag += (targetLag - velocityLag) * Math.min(1, dt * 4.0);
 
-    // 2. Idle mechanical motion (slow, restrained, continuous)
-    outerRingGroup.rotation.y = time * 0.038 + velocityLag;
-    innerRingGroup.rotation.x = time * -0.024 - velocityLag * 0.6;
-    innerRingGroup.rotation.z = Math.sin(time * 0.018) * 0.08;
+    // 2. Motion speed throttled by resting state near floor
+    const motionSpeed = 1.0 - env.coreResting * 0.82;
 
-    coreGroup.rotation.y = time * -0.014;
-    coreGroup.rotation.x = Math.sin(time * 0.022) * 0.04;
-    innerSparkMesh.rotation.y = time * 0.06;
+    // Idle mechanical motion
+    outerRingGroup.rotation.y = time * 0.038 * motionSpeed + velocityLag;
+    innerRingGroup.rotation.x =
+      time * -0.024 * motionSpeed -
+      velocityLag * 0.6 +
+      env.coreResting * (Math.PI * 0.22);
+    innerRingGroup.rotation.z = Math.sin(time * 0.018 * motionSpeed) * 0.08;
+
+    coreGroup.rotation.y = time * -0.014 * motionSpeed;
+    coreGroup.rotation.x = Math.sin(time * 0.022 * motionSpeed) * 0.04;
+    innerSparkMesh.rotation.y = time * 0.06 * motionSpeed;
 
     // 3. Responsive base placement & Hero framing
-    // Desktop: positioned in the right visual third (x ~ +2.1), leaving text clear.
-    // Tablet: smaller and pushed slightly back.
-    // Mobile: centered, backgrounded, non-intrusive.
     let baseX = 2.15;
     let baseY = 0.25;
-    let baseZ = 0.5;
     let baseScale = 1.0;
 
     if (viewport.width < 640) {
-      // Mobile
+      // Mobile: centered, non-intrusive
       baseX = 0.0;
-      baseY = 0.4;
-      baseZ = -2.4;
-      baseScale = 0.55;
+      baseY = 0.35;
+      baseScale = 0.52;
     } else if (viewport.width < 1024) {
       // Tablet
       baseX = 0.85;
       baseY = 0.15;
-      baseZ = -1.4;
       baseScale = 0.72;
     } else if (viewport.width < 1280) {
-      // Modest desktop
+      // Narrow desktop
       baseX = 1.85;
       baseScale = 0.88;
     }
 
-    // 4. Depth-based recession (0 m to 3800 m)
-    // 0 - 600 m: Core prominent in Hero
-    // 600 - 1500 m: Core smoothly recedes back into the abyss
-    // > 1500 m: Sits deep in background with subdued presence
-    const depth = depthState.smoothedDepth;
-    let depthRecedeZ = 0;
-    let depthScaleMult = 1.0;
-    let depthOpacity = 1.0;
+    // 4. Depth-driven position and scale modulation
+    const depthZ = 0.5 + env.coreZOffset;
+    const depthScale = baseScale * (0.45 + env.coreVisibility * 0.55);
 
-    if (depth > 500) {
-      const recedeT = Math.min(1, (depth - 500) / 1100);
-      depthRecedeZ = -recedeT * 4.5;
-      depthScaleMult = 1.0 - recedeT * 0.35;
-      depthOpacity = Math.max(0.12, 1.0 - recedeT * 0.75);
-    }
+    group.scale.set(depthScale, depthScale, depthScale);
+    group.position.set(baseX, baseY, depthZ);
 
-    // Apply scale & position
-    const currentScale = baseScale * depthScaleMult;
-    group.scale.set(currentScale, currentScale, currentScale);
-    group.position.set(baseX, baseY, baseZ + depthRecedeZ);
+    // Material opacities
+    smokyFacetMat.opacity = 0.78 * env.coreVisibility;
+    biolumeInnerMat.opacity = 0.85 * env.coreVisibility;
 
-    smokyFacetMat.opacity = 0.78 * depthOpacity;
-    biolumeInnerMat.opacity = 0.85 * depthOpacity;
-
-    // 5. Pointer reaction (±3° yaw, ±2.5° pitch max; Desktop only)
+    // 5. Pointer reaction (Desktop only, damped down in focus and resting states)
     if (enablePointer) {
-      const targetYaw = pointer.x * 0.06;
-      const targetPitch = -pointer.y * 0.045;
+      const pointerFactor = 1.0 - env.coreResting * 0.65;
+      const targetYaw = pointer.x * 0.06 * pointerFactor;
+      const targetPitch = -pointer.y * 0.045 * pointerFactor;
       group.rotation.y += (targetYaw - group.rotation.y) * Math.min(1, dt * 3.5);
       group.rotation.x += (targetPitch - group.rotation.x) * Math.min(1, dt * 3.5);
     } else {

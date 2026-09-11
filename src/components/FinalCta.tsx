@@ -1,13 +1,11 @@
 import { site } from "@/content/site";
 import { Button, Container } from "./primitives";
 import { Contour } from "./Contour";
-import { BabScene } from "./BabScene";
 
 export function FinalCta() {
   return (
-    <section id="final-cta" className="relative overflow-hidden border-t border-shelf-dim bg-abyss py-24 sm:py-36">
-      <BabScene />
-      {/* mantle: keeps the glow alive at the edges, protects the line */}
+    <section id="final-cta" className="relative overflow-hidden border-t border-shelf-dim py-24 sm:py-36">
+      {/* mantle: protects text readability while letting the global 3D seafloor and resting Core read through */}
       <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_30%_110%,transparent_0%,var(--color-abyss)_78%)]" />
       <div className="absolute inset-x-0 bottom-0 opacity-40">
         <Contour />
