@@ -1,5 +1,4 @@
 import { site } from "@/content/site";
-import { DeepScene } from "./DeepScene";
 import { Button } from "./primitives";
 
 export function Hero() {
@@ -8,7 +7,6 @@ export function Hero() {
       id="top"
       className="relative flex min-h-[92vh] items-center overflow-hidden"
     >
-      <DeepScene />
       {/* grading mantle — scene reads through, text stays legible */}
       <div className="absolute inset-0 bg-gradient-to-r from-abyss via-abyss/70 to-transparent sm:via-abyss/45" />
       <div className="absolute inset-0 bg-gradient-to-t from-abyss via-transparent to-abyss/30" />

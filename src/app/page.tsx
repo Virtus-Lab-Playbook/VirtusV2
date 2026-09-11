@@ -32,7 +32,7 @@ export default function Home() {
       <Announcement />
       <Nav />
 
-      <main id="main">
+      <main id="main" className="relative z-[1]">
         <Hero />
         <TrustStrip />
         <Contour animate />

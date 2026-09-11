@@ -10,10 +10,10 @@ import { MAX_DEPTH_METERS } from "@/experience/experience-config";
  * Now powered directly by the centralized section-aware Depth System.
  */
 export function DepthRail() {
-  const { smoothedDepth } = useExperience();
+  const { rawDepth, smoothedDepth } = useExperience();
 
   const progress = Math.min(1, Math.max(0, smoothedDepth / MAX_DEPTH_METERS));
-  const depth = Math.round(smoothedDepth / 10) * 10;
+  const depth = Math.round(rawDepth / 10) * 10;
   const ticks = [0, 1000, 2000, 3000, MAX_DEPTH_METERS];
 
   return (

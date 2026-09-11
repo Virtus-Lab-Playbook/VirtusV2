@@ -178,25 +178,49 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const handleResize = () => {
-      measureMilestones();
-      handleScroll();
+    let measureRaf = 0;
+    const scheduleMeasure = () => {
+      if (!measureRaf) {
+        measureRaf = requestAnimationFrame(() => {
+          measureMilestones();
+          handleScroll();
+          measureRaf = 0;
+        });
+      }
     };
 
-    // Initial measurement after mount and post-paint layout pass
-    measureMilestones();
-    handleScroll();
+    const handleResize = () => {
+      scheduleMeasure();
+    };
 
-    const settleTimer = setTimeout(() => {
-      measureMilestones();
-      handleScroll();
-    }, 150);
+    // Initial measurement
+    scheduleMeasure();
+
+    // Re-measure once web fonts have fully resolved
+    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        scheduleMeasure();
+      });
+    }
+
+    // Dynamic layout size changes (e.g. FAQ accordion toggle, BriefBuilder expansion)
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      const target = document.getElementById("main") || document.body;
+      if (target) {
+        ro = new ResizeObserver(() => {
+          scheduleMeasure();
+        });
+        ro.observe(target);
+      }
+    }
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
 
     return () => {
-      clearTimeout(settleTimer);
+      if (ro) ro.disconnect();
+      if (measureRaf) cancelAnimationFrame(measureRaf);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
       if (rafRef.current) {

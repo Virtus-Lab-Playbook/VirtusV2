@@ -4,7 +4,7 @@ import { Wordmark } from "./Wordmark";
 
 export function Footer() {
   return (
-    <footer id="footer" className="border-t border-shelf-dim py-16">
+    <footer id="footer" className="relative z-[1] border-t border-shelf-dim py-16">
       <Container>
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div className="max-w-[24ch]">

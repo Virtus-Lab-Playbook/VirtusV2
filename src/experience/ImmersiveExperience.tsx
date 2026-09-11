@@ -3,20 +3,23 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useExperience } from "./ExperienceContext";
+import { getEnvironmentState } from "./environment/environment-config";
+import { createDeepAtmosphere } from "./environment/DeepAtmosphere";
+import { createMarineSnow } from "./environment/MarineSnow";
 import { createVirtusCore } from "./objects/VirtusCore";
 
 /**
- * ImmersiveExperience (Phase 2 Foundation)
+ * ImmersiveExperience (Phase 3 Foundation)
  *
- * Implements the continuous spatial layer:
- * - One WebGL renderer (alpha, high-performance)
- * - One PerspectiveCamera
- * - One Scene with restrained lighting
- * - The signature procedural VIRTUS CORE
- * - Subtle ambient particle veil in background
- * - Section-aware depth tracking from ExperienceContext
- * - Strict pointer-events-none & z-index: 1 layering (under HTML text, above hero mantle)
- * - Tab visibility guard & resource disposal
+ * Consolidates the global spatial and atmospheric Three.js layer:
+ * - One WebGL renderer (alpha, autoClear: false, high-performance)
+ * - Two-pass unified pipeline:
+ *   1. Procedural DeepAtmosphere background shader (caustics, rays, topLight, pointer bloom)
+ *   2. Perspective 3D Scene with Marine Snow particles, Virtus Core, and 3-point lighting
+ * - Smooth depth-driven environment states: Surface -> Twilight -> Descent -> Deep
+ * - Shared pointer and resize listeners
+ * - Safe z-index: -10 and pointer-events: none layering
+ * - Tab visibility detection & resource disposal
  */
 export function ImmersiveExperience() {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -58,71 +61,48 @@ export function ImmersiveExperience() {
     const { width: initW, height: initH } = getViewport();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
     renderer.setSize(initW, initH);
+    renderer.autoClear = false;
     renderer.domElement.style.position = "fixed";
     renderer.domElement.style.inset = "0";
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
     renderer.domElement.style.pointerEvents = "none";
-    renderer.domElement.style.zIndex = "1";
+    renderer.domElement.style.zIndex = "-10";
     el.appendChild(renderer.domElement);
 
-    // --- 1. Scene & Camera ---
+    // --- 1. Pass 1: Fullscreen Procedural Atmosphere ---
+    const atmosphere = createDeepAtmosphere(quality, initW, initH);
+
+    // --- 2. Pass 2: Main 3D Perspective Scene ---
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(52, initW / initH, 0.1, 100);
     camera.position.set(0, 0, 7.5);
 
-    // --- 2. Lighting Rig (Minimal, oceanic, restrained) ---
-    // Key light (cool neutral direction)
+    // --- 3. Lighting Rig (Oceanic & Restrained) ---
     const keyLight = new THREE.DirectionalLight(0xf0f4f3, 0.95);
     keyLight.position.set(4, 5, 6);
     scene.add(keyLight);
 
-    // Dim cool fill light (deep oceanic blue)
     const fillLight = new THREE.DirectionalLight(0x0b2e3a, 0.55);
     fillLight.position.set(-4, -2, 3);
     scene.add(fillLight);
 
-    // Subtle warm rim light (instrument brass accent)
     const rimLight = new THREE.PointLight(0xc8a24a, 0.4, 14);
     rimLight.position.set(3, -2, 4);
     scene.add(rimLight);
 
-    // Ambient ocean floor floor tone
     const ambientLight = new THREE.AmbientLight(0x04171e, 0.45);
     scene.add(ambientLight);
 
-    // --- 3. The Signature Virtus Core Object ---
+    // --- 4. Signature Virtus Core Object ---
     const core = createVirtusCore(quality);
     scene.add(core.group);
 
-    // --- 4. Ambient Deep-Sea Particle Veil ---
-    const PARTICLE_COUNT = quality === "LOW" ? 40 : 120;
-    const pPositions = new Float32Array(PARTICLE_COUNT * 3);
-    const pDrift = new Float32Array(PARTICLE_COUNT);
+    // --- 5. Atmospheric Marine Snow Particle Field ---
+    const marineSnow = createMarineSnow(quality);
+    scene.add(marineSnow.points);
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      pPositions[i * 3] = (Math.random() - 0.5) * 16;
-      pPositions[i * 3 + 1] = (Math.random() - 0.5) * 12;
-      pPositions[i * 3 + 2] = (Math.random() - 0.5) * 6 - 2.0;
-      pDrift[i] = 0.06 + Math.random() * 0.12;
-    }
-
-    const particlesGeo = new THREE.BufferGeometry();
-    particlesGeo.setAttribute("position", new THREE.BufferAttribute(pPositions, 3));
-
-    const particlesMat = new THREE.PointsMaterial({
-      color: new THREE.Color(0x31e0be),
-      size: quality === "LOW" ? 0.035 : 0.045,
-      transparent: true,
-      opacity: 0.15,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    const particlesField = new THREE.Points(particlesGeo, particlesMat);
-    scene.add(particlesField);
-
-    // --- 5. Event Listeners (Pointer, Resize, Visibility) ---
+    // --- 6. Shared Pointer & Resize Listeners ---
     const pointer = { x: 0, y: 0 };
     const pointerTarget = { x: 0, y: 0 };
     let rafId = 0;
@@ -130,7 +110,6 @@ export function ImmersiveExperience() {
     let lastTime = performance.now();
 
     const onPointerMove = (e: PointerEvent) => {
-      // Normalized coordinates (-1 to +1)
       pointerTarget.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointerTarget.y = -(e.clientY / window.innerHeight) * 2 + 1;
     };
@@ -141,6 +120,7 @@ export function ImmersiveExperience() {
 
     const onResize = () => {
       const { width: nw, height: nh } = getViewport();
+      atmosphere.resize(nw, nh);
       camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
       renderer.setSize(nw, nh);
@@ -148,39 +128,42 @@ export function ImmersiveExperience() {
     };
     window.addEventListener("resize", onResize);
 
-    // --- 6. Unified Render Loop ---
+    // --- 7. Unified Render Loop ---
     const render = (now: number) => {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
 
       const currentDepth = depthStateRef.current;
       const vp = getViewport();
+      const env = getEnvironmentState(currentDepth.smoothedDepth);
 
-      // Damped pointer interpolation
+      // Smooth pointer interpolation
       pointer.x += (pointerTarget.x - pointer.x) * Math.min(1, dt * 3.5);
       pointer.y += (pointerTarget.y - pointer.y) * Math.min(1, dt * 3.5);
 
-      // Subtle camera parallax
+      // Subtle camera parallax (Desktop HIGH only)
       if (quality === "HIGH") {
-        camera.position.x = pointer.x * 0.2;
-        camera.position.y = pointer.y * 0.15;
+        camera.position.x = pointer.x * 0.16;
+        camera.position.y = pointer.y * 0.12;
       }
       camera.lookAt(0, 0, 0);
+
+      // Update atmospheric shader pass
+      atmosphere.update(now * 0.001, env, pointer, vp);
+
+      // Update marine snow particles
+      marineSnow.update(dt, now * 0.001, env);
 
       // Update Virtus Core
       core.update(dt, now * 0.001, currentDepth, pointer, vp);
 
-      // Subtle ambient particle drift
-      const posArray = particlesGeo.attributes.position.array as Float32Array;
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        posArray[i * 3 + 1] -= pDrift[i] * dt;
-        if (posArray[i * 3 + 1] < -6) {
-          posArray[i * 3 + 1] = 6;
-        }
-      }
-      particlesGeo.attributes.position.needsUpdate = true;
-      particlesField.rotation.y += 0.01 * dt;
+      // Dynamic lighting response based on depth
+      keyLight.intensity = 0.95 * env.topLight;
+      fillLight.intensity = 0.55 * (1.0 - env.darknessMix * 0.3);
 
+      // Two-pass rendering on ONE WebGLRenderer
+      renderer.clear();
+      renderer.render(atmosphere.scene, atmosphere.camera);
       renderer.render(scene, camera);
     };
 
@@ -190,7 +173,7 @@ export function ImmersiveExperience() {
       rafId = requestAnimationFrame(loop);
     };
 
-    // Tab visibility guard: pause RAF loop when hidden to conserve GPU/battery
+    // Tab visibility guard
     const onVisibilityChange = () => {
       if (document.hidden) {
         running = false;
@@ -206,7 +189,7 @@ export function ImmersiveExperience() {
     // Start render loop
     rafId = requestAnimationFrame(loop);
 
-    // --- 7. Full Cleanup Routine ---
+    // --- 8. Complete Resource Disposal ---
     cleanup = () => {
       running = false;
       cancelAnimationFrame(rafId);
@@ -218,9 +201,9 @@ export function ImmersiveExperience() {
         renderer.domElement.remove();
       }
 
+      atmosphere.dispose();
+      marineSnow.dispose();
       core.dispose();
-      particlesGeo.dispose();
-      particlesMat.dispose();
       keyLight.dispose();
       fillLight.dispose();
       rimLight.dispose();
@@ -236,7 +219,7 @@ export function ImmersiveExperience() {
     <div
       ref={mountRef}
       aria-hidden="true"
-      className="fixed inset-0 pointer-events-none overflow-hidden bg-transparent"
+      className="fixed inset-0 pointer-events-none -z-10 overflow-hidden bg-transparent"
     />
   );
 }
