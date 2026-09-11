@@ -13,10 +13,13 @@ import { Packages } from "@/components/Packages";
 import { Faq } from "@/components/Faq";
 import { FinalCta } from "@/components/FinalCta";
 import { Footer } from "@/components/Footer";
+import { ImmersiveExperience } from "@/experience/ImmersiveExperience";
 
 export default function Home() {
   return (
     <>
+      <ImmersiveExperience />
+
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-biolume focus:px-4 focus:py-2 focus:text-abyss"
