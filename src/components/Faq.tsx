@@ -3,7 +3,7 @@ import { Container, SectionHeader } from "./primitives";
 
 export function Faq() {
   return (
-    <section className="py-24 sm:py-32">
+    <section id="faq" className="scroll-mt-24 py-24 sm:py-32">
       <Container>
         <SectionHeader title={site.faq.title} depth="3600 m" />
         <div className="border-t border-shelf-dim">

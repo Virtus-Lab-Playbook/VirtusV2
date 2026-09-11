@@ -3,7 +3,7 @@ import { Container, SectionHeader } from "./primitives";
 
 export function WhyUs() {
   return (
-    <section className="py-24 sm:py-32">
+    <section id="why-us" className="scroll-mt-24 py-24 sm:py-32">
       <Container>
         <SectionHeader title={site.why.title} depth="2400 m — abyssal" />
         <div className="grid grid-cols-1 border-t border-shelf-dim sm:grid-cols-2">

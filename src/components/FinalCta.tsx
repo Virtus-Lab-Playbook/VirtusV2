@@ -5,7 +5,7 @@ import { BabScene } from "./BabScene";
 
 export function FinalCta() {
   return (
-    <section className="relative overflow-hidden border-t border-shelf-dim bg-abyss py-24 sm:py-36">
+    <section id="final-cta" className="relative overflow-hidden border-t border-shelf-dim bg-abyss py-24 sm:py-36">
       <BabScene />
       {/* mantle: keeps the glow alive at the edges, protects the line */}
       <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_30%_110%,transparent_0%,var(--color-abyss)_78%)]" />

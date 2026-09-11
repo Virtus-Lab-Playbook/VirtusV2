@@ -14,10 +14,11 @@ import { Faq } from "@/components/Faq";
 import { FinalCta } from "@/components/FinalCta";
 import { Footer } from "@/components/Footer";
 import { ImmersiveExperience } from "@/experience/ImmersiveExperience";
+import { ExperienceProvider } from "@/experience/ExperienceContext";
 
 export default function Home() {
   return (
-    <>
+    <ExperienceProvider>
       <ImmersiveExperience />
 
       <a
@@ -47,6 +48,6 @@ export default function Home() {
       </main>
 
       <Footer />
-    </>
+    </ExperienceProvider>
   );
 }

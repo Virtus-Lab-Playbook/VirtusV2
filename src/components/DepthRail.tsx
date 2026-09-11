@@ -1,35 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useExperience } from "@/experience/ExperienceContext";
+import { MAX_DEPTH_METERS } from "@/experience/experience-config";
 
-const FLOOR = 3800; // metres — abyssal plain, at the footer
-
+/**
+ * DepthRail
+ *
+ * Fixed left vertical gutter visualizing the visitor's descent into the deep (0 m -> 3,800 m).
+ * Now powered directly by the centralized section-aware Depth System.
+ */
 export function DepthRail() {
-  const [progress, setProgress] = useState(0);
-  const raf = useRef(0);
+  const { smoothedDepth } = useExperience();
 
-  useEffect(() => {
-    const update = () => {
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0);
-      raf.current = 0;
-    };
-    const onScroll = () => {
-      if (!raf.current) raf.current = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf.current) cancelAnimationFrame(raf.current);
-    };
-  }, []);
-
-  const depth = Math.round((progress * FLOOR) / 10) * 10;
-  const ticks = [0, 1000, 2000, 3000, FLOOR];
+  const progress = Math.min(1, Math.max(0, smoothedDepth / MAX_DEPTH_METERS));
+  const depth = Math.round(smoothedDepth / 10) * 10;
+  const ticks = [0, 1000, 2000, 3000, MAX_DEPTH_METERS];
 
   return (
     <aside
@@ -49,7 +34,7 @@ export function DepthRail() {
           <span
             key={t}
             className="absolute -left-1 h-px w-2 bg-shelf"
-            style={{ top: `${(t / FLOOR) * 100}%` }}
+            style={{ top: `${(t / MAX_DEPTH_METERS) * 100}%` }}
           />
         ))}
         <span
