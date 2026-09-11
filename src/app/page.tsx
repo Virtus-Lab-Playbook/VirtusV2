@@ -1,8 +1,8 @@
-import { Announcement } from "@/components/Announcement";
 import { Nav } from "@/components/Nav";
 import { DepthRail } from "@/components/DepthRail";
 import { Hero } from "@/components/Hero";
 import { TrustStrip } from "@/components/TrustStrip";
+import { DisciplineMarquee } from "@/components/DisciplineMarquee";
 import { Contour } from "@/components/Contour";
 import { Services } from "@/components/Services";
 import { Process } from "@/components/Process";
@@ -13,24 +13,28 @@ import { Packages } from "@/components/Packages";
 import { Faq } from "@/components/Faq";
 import { FinalCta } from "@/components/FinalCta";
 import { Footer } from "@/components/Footer";
+import { ImmersiveExperience } from "@/experience/ImmersiveExperience";
+import { ExperienceProvider } from "@/experience/ExperienceContext";
 
 export default function Home() {
   return (
-    <>
+    <ExperienceProvider>
+      <ImmersiveExperience />
+
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-biolume focus:px-4 focus:py-2 focus:text-abyss"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-biolume focus:px-5 focus:py-2.5 focus:text-abyss focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-seaglass"
       >
         Skip to content
       </a>
 
       <DepthRail />
-      <Announcement />
       <Nav />
 
-      <main id="main">
+      <main id="main" tabIndex={-1} className="relative z-[1] outline-none">
         <Hero />
         <TrustStrip />
+        <DisciplineMarquee />
         <Contour animate />
         <Services />
         <Process />
@@ -44,6 +48,6 @@ export default function Home() {
       </main>
 
       <Footer />
-    </>
+    </ExperienceProvider>
   );
 }
