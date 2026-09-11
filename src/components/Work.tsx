@@ -86,11 +86,15 @@ export function Work() {
           title={site.work.title}
           intro={site.work.intro}
           depth="1600 m — bathypelagic"
+          data-reveal
         />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {site.work.projects.map((proj) => (
+          {site.work.projects.map((proj, idx) => (
             <article
               key={proj.id}
+              data-reveal
+              data-experience-signal="work"
+              data-experience-index={idx}
               className="group flex flex-col overflow-hidden rounded-xl border border-shelf/80 bg-deep/50 transition-all duration-300 hover:-translate-y-1.5 hover:border-shelf hover:shadow-[0_24px_48px_-20px_rgba(49,224,190,0.14)]"
             >
               <div className="h-36 border-b border-shelf-dim/80">

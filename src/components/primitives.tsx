@@ -31,14 +31,20 @@ export function SectionHeader({
   intro,
   depth,
   id,
+  "data-reveal": dataReveal,
 }: {
   title: string;
   intro?: string;
   depth?: string;
   id?: string;
+  "data-reveal"?: boolean;
 }) {
   return (
-    <header className="mb-12 sm:mb-16 max-w-[48ch]" id={id}>
+    <header
+      className="mb-12 sm:mb-16 max-w-[48ch]"
+      id={id}
+      data-reveal={dataReveal ? "" : undefined}
+    >
       <div className="mb-5 flex items-center gap-4">
         <GoldRule />
         {depth ? (
@@ -73,7 +79,7 @@ export function Button({
   className = "",
 }: ButtonProps) {
   const base =
-    "group inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full px-6 py-3 text-sm font-medium tracking-tight transition-all duration-200 active:scale-[0.98]";
+    "group inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full px-6 py-3 text-sm font-medium tracking-tight transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-biolume";
   const styles =
     variant === "primary"
       ? "bg-biolume text-abyss hover:bg-seaglass hover:shadow-[0_0_24px_-4px_var(--color-biolume)]"

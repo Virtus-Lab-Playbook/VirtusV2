@@ -2,25 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { site } from "@/content/site";
+import { useExperience } from "@/experience/ExperienceContext";
 import { Wordmark } from "./Wordmark";
 
 export function Nav() {
   const [open, setOpen] = useState(false);
-  const [lifted, setLifted] = useState(false);
+  const { smoothedDepth, rawDepth, resetSignal } = useExperience();
 
-  useEffect(() => {
-    const onScroll = () => setLifted(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  // Unified scroll state derived directly from centralized depth system (no duplicate scroll listener)
+  const lifted = rawDepth > 15;
+
+  // Derive active navigation section from depth architecture
+  let activeNavHref: string | null = null;
+  if (smoothedDepth >= 80 && smoothedDepth < 650) {
+    activeNavHref = "#services";
+  } else if (smoothedDepth >= 650 && smoothedDepth < 1350) {
+    activeNavHref = "#process";
+  } else if (smoothedDepth >= 1350 && smoothedDepth < 2100) {
+    activeNavHref = "#work";
+  } else if (smoothedDepth >= 2900 && smoothedDepth < 3500) {
+    activeNavHref = "#packages";
+  }
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
+    if (open) {
+      resetSignal();
+    }
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open]);
+  }, [open, resetSignal]);
 
   return (
     <header
@@ -40,15 +52,22 @@ export function Nav() {
         </a>
 
         <nav className="hidden items-center gap-8 md:flex">
-          {site.nav.links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className="relative py-1 text-sm font-medium tracking-tight text-tide transition-colors duration-200 after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-biolume after:transition-all after:duration-250 hover:text-seaglass hover:after:w-full"
-            >
-              {l.label}
-            </a>
-          ))}
+          {site.nav.links.map((l) => {
+            const isActive = l.href === activeNavHref;
+            return (
+              <a
+                key={l.href}
+                href={l.href}
+                className={`relative py-1 text-sm tracking-tight transition-colors duration-200 after:absolute after:bottom-0 after:left-0 after:h-px after:bg-biolume after:transition-all after:duration-250 ${
+                  isActive
+                    ? "text-seaglass after:w-full font-semibold"
+                    : "text-tide after:w-0 hover:text-seaglass hover:after:w-full font-medium"
+                }`}
+              >
+                {l.label}
+              </a>
+            );
+          })}
           <a
             href={site.nav.action.href}
             className="inline-flex min-h-10 items-center justify-center rounded-full bg-biolume px-5 py-2 text-sm font-medium tracking-tight text-abyss transition-all duration-200 hover:bg-seaglass hover:shadow-[0_0_20px_-4px_var(--color-biolume)] active:scale-[0.98]"
@@ -87,16 +106,29 @@ export function Nav() {
       {open ? (
         <div className="border-t border-shelf-dim/80 bg-abyss/95 backdrop-blur-xl md:hidden animate-in fade-in duration-200">
           <nav className="flex flex-col px-5 py-4 sm:px-8">
-            {site.nav.links.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="border-b border-shelf-dim/60 py-3.5 text-[0.95rem] text-tide transition-colors hover:text-seaglass"
-              >
-                {l.label}
-              </a>
-            ))}
+            {site.nav.links.map((l) => {
+              const isActive = l.href === activeNavHref;
+              return (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className={`border-b border-shelf-dim/60 py-3.5 text-[0.95rem] transition-colors flex items-center justify-between ${
+                    isActive
+                      ? "text-seaglass font-medium"
+                      : "text-tide hover:text-seaglass"
+                  }`}
+                >
+                  <span>{l.label}</span>
+                  {isActive ? (
+                    <span
+                      aria-hidden
+                      className="h-1.5 w-1.5 rounded-full bg-biolume shadow-[0_0_8px_1px_var(--color-biolume)]"
+                    />
+                  ) : null}
+                </a>
+              );
+            })}
             <a
               href={site.nav.action.href}
               onClick={() => setOpen(false)}

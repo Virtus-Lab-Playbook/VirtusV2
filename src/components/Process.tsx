@@ -9,12 +9,15 @@ export function Process() {
           title={site.process.title}
           intro={site.process.intro}
           depth="1200 m — the descent"
+          data-reveal
         />
         <div className="relative border-t border-shelf-dim/80">
           <ol className="divide-y divide-shelf-dim/80">
             {site.process.steps.map((step, i) => (
               <li
                 key={step.name}
+                data-experience-signal="process"
+                data-experience-index={i}
                 className="group relative grid grid-cols-[2.5rem_1fr] gap-6 py-8 transition-all duration-200 hover:bg-deep/25 sm:grid-cols-[4.5rem_1fr] sm:gap-10 sm:py-9"
               >
                 <div className="flex flex-col items-start pt-0.5">

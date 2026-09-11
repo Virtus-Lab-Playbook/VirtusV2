@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -12,6 +13,8 @@ import type {
   DepthState,
   DepthZone,
   ExperienceContextValue,
+  ExperienceSignalType,
+  SignalState,
 } from "./experience-types";
 import {
   DEPTH_DAMPING_FACTOR,
@@ -37,11 +40,30 @@ const initialDepthState: DepthState = {
   currentZone: "SURFACE",
 };
 
+const initialSignalState: SignalState = {
+  activeSignal: null,
+  activeSignalIndex: -1,
+  signalSource: null,
+};
+
 const ExperienceContext = createContext<ExperienceContextValue | null>(null);
 
 export function ExperienceProvider({ children }: { children: ReactNode }) {
   const qualityConfig = useSceneQuality();
   const [depthState, setDepthState] = useState<DepthState>(initialDepthState);
+  const [signalState, setSignalState] = useState<SignalState>(initialSignalState);
+
+  const triggerSignal = useCallback((type: ExperienceSignalType, index: number = -1) => {
+    setSignalState({
+      activeSignal: type,
+      activeSignalIndex: index,
+      signalSource: null,
+    });
+  }, []);
+
+  const resetSignal = useCallback(() => {
+    setSignalState(initialSignalState);
+  }, []);
 
   const stateRef = useRef<DepthState>(initialDepthState);
   const measuredMilestonesRef = useRef<MeasuredMilestone[]>([]);
@@ -229,9 +251,124 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
     };
   }, [qualityConfig.isStatic]);
 
+  // Delegated Scene-Signal System (Pointer & Keyboard Parity) + Section Entry Reveals
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    // 1. Delegated pointer interactions (Desktop / Mouse only, touch protected)
+    const handlePointerOver = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return; // Touch protection
+      const target = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-experience-signal]");
+      if (!target) return;
+
+      const signal = (target.getAttribute("data-experience-signal") as ExperienceSignalType) || null;
+      const indexAttr = target.getAttribute("data-experience-index");
+      const index = indexAttr !== null ? parseInt(indexAttr, 10) : -1;
+
+      setSignalState((prev) => {
+        if (prev.activeSignal === signal && prev.activeSignalIndex === index && prev.signalSource === "pointer") {
+          return prev;
+        }
+        return {
+          activeSignal: signal,
+          activeSignalIndex: index,
+          signalSource: "pointer",
+        };
+      });
+    };
+
+    const handlePointerOut = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
+      const current = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-experience-signal]");
+      const next = (e.relatedTarget as HTMLElement | null)?.closest<HTMLElement>("[data-experience-signal]");
+
+      if (current && (!next || next !== current)) {
+        if (!next) {
+          setSignalState(initialSignalState);
+        }
+      }
+    };
+
+    // 2. Keyboard Parity (focusin / focusout)
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-experience-signal]");
+      if (!target) return;
+
+      const signal = (target.getAttribute("data-experience-signal") as ExperienceSignalType) || null;
+      const indexAttr = target.getAttribute("data-experience-index");
+      const index = indexAttr !== null ? parseInt(indexAttr, 10) : -1;
+
+      setSignalState({
+        activeSignal: signal,
+        activeSignalIndex: index,
+        signalSource: "keyboard",
+      });
+    };
+
+    const handleFocusOut = (e: FocusEvent) => {
+      const current = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-experience-signal]");
+      const next = (e.relatedTarget as HTMLElement | null)?.closest<HTMLElement>("[data-experience-signal]");
+
+      if (current && (!next || next !== current)) {
+        if (!next) {
+          setSignalState(initialSignalState);
+        }
+      }
+    };
+
+    // 3. Safety Cleanups: window blur, document mouseleave
+    const handleSafeReset = () => {
+      setSignalState(initialSignalState);
+    };
+
+    document.addEventListener("pointerover", handlePointerOver, { passive: true });
+    document.addEventListener("pointerout", handlePointerOut, { passive: true });
+    document.addEventListener("focusin", handleFocusIn, { passive: true });
+    document.addEventListener("focusout", handleFocusOut, { passive: true });
+    document.addEventListener("mouseleave", handleSafeReset);
+    window.addEventListener("blur", handleSafeReset);
+
+    // 4. Section Entry Reveal Observer
+    let revealObserver: IntersectionObserver | null = null;
+    const isReduced = qualityConfig.isStatic;
+
+    const revealTargets = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    if (isReduced) {
+      revealTargets.forEach((el) => el.classList.add("is-revealed"));
+    } else if (typeof IntersectionObserver !== "undefined") {
+      revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-revealed");
+              revealObserver?.unobserve(entry.target);
+            }
+          });
+        },
+        { rootMargin: "0px 0px -40px 0px", threshold: 0.1 },
+      );
+      revealTargets.forEach((el) => revealObserver?.observe(el));
+    }
+
+    return () => {
+      document.removeEventListener("pointerover", handlePointerOver);
+      document.removeEventListener("pointerout", handlePointerOut);
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("focusout", handleFocusOut);
+      document.removeEventListener("mouseleave", handleSafeReset);
+      window.removeEventListener("blur", handleSafeReset);
+      if (revealObserver) {
+        revealObserver.disconnect();
+      }
+    };
+  }, [qualityConfig.isStatic]);
+
   const value: ExperienceContextValue = {
     ...depthState,
     qualityConfig,
+    signalState,
+    triggerSignal,
+    resetSignal,
   };
 
   return (

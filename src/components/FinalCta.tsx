@@ -11,7 +11,8 @@ export function FinalCta() {
         <Contour />
       </div>
       <Container className="relative z-10">
-        <div className="mb-7 flex items-center gap-4">
+        <div data-reveal>
+          <div className="mb-7 flex items-center gap-4">
           <span aria-hidden className="block h-px w-10 bg-biolume" />
           <span className="readout inline-flex items-center gap-2 text-tide/90">
             <span
@@ -28,6 +29,7 @@ export function FinalCta() {
           <Button href={site.finalCta.action.href}>
             {site.finalCta.action.label}
           </Button>
+        </div>
         </div>
       </Container>
     </section>

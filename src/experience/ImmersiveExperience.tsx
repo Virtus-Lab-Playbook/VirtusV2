@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useExperience } from "./ExperienceContext";
+import type { SignalState } from "./experience-types";
 import { getEnvironmentState } from "./environment/environment-config";
 import { createDeepAtmosphere } from "./environment/DeepAtmosphere";
 import { createMarineSnow } from "./environment/MarineSnow";
@@ -10,17 +11,88 @@ import { createAbyssFloor } from "./environment/AbyssFloor";
 import { createVirtusCore } from "./objects/VirtusCore";
 
 /**
- * ImmersiveExperience (Phase 3 Foundation)
+ * Three subtle environmental project beacons at bathypelagic depth (1600 m).
+ * Nearly invisible baseline, softly illuminating when corresponding Work card is inspected.
+ */
+function createWorkBeacons() {
+  const group = new THREE.Group();
+  group.name = "WorkBeacons";
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 32;
+  canvas.height = 32;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grad.addColorStop(0, "rgba(49, 224, 190, 1)");
+    grad.addColorStop(0.4, "rgba(49, 224, 190, 0.35)");
+    grad.addColorStop(1, "rgba(49, 224, 190, 0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 32, 32);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+
+  // 3 project beacons corresponding to Tidewater (0420m), Meridian (0980m), Harbor Freight (1600m)
+  const positions = [
+    [-2.2, 0.35, -2.4],
+    [0.0, 0.65, -3.0],
+    [2.2, 0.15, -2.5],
+  ];
+
+  const items = positions.map((pos) => {
+    const mat = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.06,
+      color: 0x31e0be,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.position.set(pos[0], pos[1], pos[2]);
+    sprite.scale.set(0.35, 0.35, 1);
+    group.add(sprite);
+    return { sprite, mat };
+  });
+
+  const update = (dt: number, smoothedDepth: number, signalState?: SignalState) => {
+    // Only visible in bathypelagic depth window (around 900m to 2500m)
+    const depthVisibility =
+      THREE.MathUtils.smoothstep(smoothedDepth, 900, 1400) *
+      (1.0 - THREE.MathUtils.smoothstep(smoothedDepth, 2100, 2600));
+
+    items.forEach(({ mat, sprite }, i) => {
+      const isActive =
+        signalState?.activeSignal === "work" &&
+        signalState.activeSignalIndex === i;
+      const targetOpacity = (isActive ? 0.48 : 0.06) * depthVisibility;
+      const targetScale = isActive ? 0.48 : 0.35;
+      mat.opacity += (targetOpacity - mat.opacity) * Math.min(1, dt * 4.0);
+      sprite.scale.x += (targetScale - sprite.scale.x) * Math.min(1, dt * 4.0);
+      sprite.scale.y = sprite.scale.x;
+    });
+  };
+
+  const dispose = () => {
+    items.forEach(({ mat, sprite }) => {
+      mat.dispose();
+      group.remove(sprite);
+    });
+    texture.dispose();
+  };
+
+  return { group, update, dispose };
+}
+
+/**
+ * ImmersiveExperience (Phase 3 Foundation + Phase 6 Polish)
  *
  * Consolidates the global spatial and atmospheric Three.js layer:
  * - One WebGL renderer (alpha, autoClear: false, high-performance)
- * - Two-pass unified pipeline:
- *   1. Procedural DeepAtmosphere background shader (caustics, rays, topLight, pointer bloom)
- *   2. Perspective 3D Scene with Marine Snow particles, Virtus Core, and 3-point lighting
- * - Smooth depth-driven environment states: Surface -> Twilight -> Descent -> Deep
- * - Shared pointer and resize listeners
- * - Safe z-index: -10 and pointer-events: none layering
- * - Tab visibility detection & resource disposal
+ * - Two-pass unified pipeline
+ * - Adaptive runtime performance guard
+ * - Bathypelagic Work project beacons
+ * - Virtus Core supplementary signal integration
  */
 export function ImmersiveExperience() {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -107,12 +179,24 @@ export function ImmersiveExperience() {
     const abyssFloor = createAbyssFloor(quality);
     scene.add(abyssFloor.mesh);
 
-    // --- 7. Shared Pointer & Resize Listeners ---
+    // --- 7. Bathypelagic Work Project Beacons ---
+    const workBeacons = createWorkBeacons();
+    scene.add(workBeacons.group);
+
+    // --- 8. Shared Pointer & Resize Listeners ---
     const pointer = { x: 0, y: 0 };
     const pointerTarget = { x: 0, y: 0 };
     let rafId = 0;
     let running = true;
     let lastTime = performance.now();
+
+    // --- 9. Adaptive Runtime Performance Guard ---
+    let activeQuality = quality;
+    let activeDprCap = maxDpr;
+    let frameSamples = 0;
+    let accumulatedDt = 0;
+    let hasDowngraded = false;
+    const SAMPLE_WINDOW = 75; // sample 75 frames (~1.25s at 60fps)
 
     const onPointerMove = (e: PointerEvent) => {
       pointerTarget.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -129,14 +213,37 @@ export function ImmersiveExperience() {
       camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
       renderer.setSize(nw, nh);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, activeDprCap));
     };
     window.addEventListener("resize", onResize);
 
-    // --- 8. Unified Render Loop ---
+    // --- 10. Unified Render Loop ---
     const render = (now: number) => {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
+
+      // Runtime Performance Guard: one-time graceful downgrade if device struggles (< 30 FPS)
+      if (!hasDowngraded && frameSamples < 150 && dt > 0) {
+        accumulatedDt += dt;
+        frameSamples++;
+        if (frameSamples >= SAMPLE_WINDOW) {
+          const avgFrameTime = accumulatedDt / frameSamples;
+          if (avgFrameTime > 0.0333) {
+            hasDowngraded = true;
+            if (activeQuality === "HIGH") {
+              activeQuality = "MEDIUM";
+              activeDprCap = 1.25;
+            } else if (activeQuality === "MEDIUM") {
+              activeQuality = "LOW";
+              activeDprCap = 1.0;
+            }
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, activeDprCap));
+          } else {
+            accumulatedDt = 0;
+            frameSamples = 0;
+          }
+        }
+      }
 
       const currentDepth = depthStateRef.current;
       const vp = getViewport();
@@ -149,7 +256,7 @@ export function ImmersiveExperience() {
       // Subtle camera parallax and vertical descent choreography
       const baseY = env.cameraY;
       const baseZ = env.cameraZ;
-      if (quality === "HIGH") {
+      if (activeQuality === "HIGH") {
         camera.position.x = pointer.x * 0.16;
         camera.position.y = baseY + pointer.y * 0.12;
         camera.position.z = baseZ;
@@ -169,8 +276,11 @@ export function ImmersiveExperience() {
       // Update bathymetric seafloor
       abyssFloor.update(now * 0.001, env);
 
-      // Update Virtus Core
-      core.update(dt, now * 0.001, currentDepth, pointer, vp);
+      // Update Bathypelagic Work project beacons
+      workBeacons.update(dt, currentDepth.smoothedDepth, currentDepth.signalState);
+
+      // Update Virtus Core with supplementary scene signals
+      core.update(dt, now * 0.001, currentDepth, pointer, vp, currentDepth.signalState);
 
       // Dynamic lighting response based on depth & terminal state
       keyLight.intensity = 0.95 * env.topLight;
@@ -206,7 +316,7 @@ export function ImmersiveExperience() {
     // Start render loop
     rafId = requestAnimationFrame(loop);
 
-    // --- 9. Complete Resource Disposal ---
+    // --- 11. Complete Resource Disposal ---
     cleanup = () => {
       running = false;
       cancelAnimationFrame(rafId);
@@ -218,6 +328,7 @@ export function ImmersiveExperience() {
         renderer.domElement.remove();
       }
 
+      workBeacons.dispose();
       atmosphere.dispose();
       marineSnow.dispose();
       abyssFloor.dispose();

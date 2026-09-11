@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { DepthState, SceneQuality } from "../experience-types";
+import type { DepthState, SceneQuality, SignalState } from "../experience-types";
 import { getEnvironmentState } from "../environment/environment-config";
 
 export interface VirtusCoreInstance {
@@ -10,6 +10,7 @@ export interface VirtusCoreInstance {
     depthState: DepthState,
     pointer: { x: number; y: number },
     viewport: { width: number; height: number },
+    signalState?: SignalState,
   ) => void;
   dispose: () => void;
 }
@@ -153,12 +154,20 @@ export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
   let velocityLag = 0;
   const enablePointer = quality === "HIGH" || quality === "MEDIUM";
 
+  // Supplementary UI Interaction Lerp Offsets (Never jarring, smoothly returning)
+  let signalGimbalOffset = 0;
+  let signalYawOffset = 0;
+  let signalBiolumeBoost = 0;
+  let signalBrassWarmth = 0;
+  let briefPulseTimer = 0;
+
   const update = (
     dt: number,
     time: number,
     depthState: DepthState,
     pointer: { x: number; y: number },
     viewport: { width: number; height: number },
+    signalState?: SignalState,
   ) => {
     const env = getEnvironmentState(depthState.smoothedDepth);
 
@@ -169,19 +178,66 @@ export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
     // 2. Motion speed throttled by resting state near floor
     const motionSpeed = 1.0 - env.coreResting * 0.82;
 
-    // Idle mechanical motion
+    // 3. Evaluate Supplementary Scene Signals
+    let targetGimbal = 0;
+    let targetYaw = 0;
+    let targetBiolume = 0;
+    let targetBrass = 0;
+
+    if (signalState) {
+      const { activeSignal, activeSignalIndex } = signalState;
+
+      if (activeSignal === "service") {
+        // Services: subtle ring tilt (3-4 deg) & gentle biolume shift
+        const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
+        targetGimbal = (idx - 1.5) * 0.045;
+        targetYaw = (idx - 1.5) * 0.03;
+        targetBiolume = 0.16;
+      } else if (activeSignal === "process") {
+        // Process: very small instrument tick
+        const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
+        targetGimbal = Math.sin(idx * 1.2) * 0.035;
+        targetBiolume = 0.05;
+      } else if (activeSignal === "work") {
+        // Work: subtle orientation response toward project beacon
+        const idx = activeSignalIndex >= 0 ? activeSignalIndex : 1;
+        targetYaw = (idx - 1) * 0.05;
+        targetBiolume = 0.10;
+      } else if (activeSignal === "package") {
+        // Packages: subtle warm brass response in Core instrument edges
+        targetBrass = 0.35;
+        targetBiolume = 0.04;
+      } else if (activeSignal === "brief-pulse") {
+        // BriefBuilder: one-time gentle biolume pulse triggered on answer selection
+        briefPulseTimer = 1.2;
+      }
+    }
+
+    if (briefPulseTimer > 0) {
+      briefPulseTimer = Math.max(0, briefPulseTimer - dt);
+      targetBiolume += (briefPulseTimer / 1.2) * 0.28;
+    }
+
+    // Smooth lerping of all signal offsets back to baseline
+    signalGimbalOffset += (targetGimbal - signalGimbalOffset) * Math.min(1, dt * 3.2);
+    signalYawOffset += (targetYaw - signalYawOffset) * Math.min(1, dt * 3.2);
+    signalBiolumeBoost += (targetBiolume - signalBiolumeBoost) * Math.min(1, dt * 3.5);
+    signalBrassWarmth += (targetBrass - signalBrassWarmth) * Math.min(1, dt * 3.5);
+
+    // Idle mechanical motion + signal modulations
     outerRingGroup.rotation.y = time * 0.038 * motionSpeed + velocityLag;
     innerRingGroup.rotation.x =
       time * -0.024 * motionSpeed -
       velocityLag * 0.6 +
       env.coreResting * (Math.PI * 0.22);
-    innerRingGroup.rotation.z = Math.sin(time * 0.018 * motionSpeed) * 0.08;
+    innerRingGroup.rotation.z =
+      Math.sin(time * 0.018 * motionSpeed) * 0.08 + signalGimbalOffset;
 
     coreGroup.rotation.y = time * -0.014 * motionSpeed;
     coreGroup.rotation.x = Math.sin(time * 0.022 * motionSpeed) * 0.04;
     innerSparkMesh.rotation.y = time * 0.06 * motionSpeed;
 
-    // 3. Responsive base placement & Hero framing
+    // 4. Responsive base placement & Hero framing
     let baseX = 2.15;
     let baseY = 0.25;
     let baseScale = 1.0;
@@ -202,26 +258,32 @@ export function createVirtusCore(quality: SceneQuality): VirtusCoreInstance {
       baseScale = 0.88;
     }
 
-    // 4. Depth-driven position and scale modulation
+    // 5. Depth-driven position and scale modulation
     const depthZ = 0.5 + env.coreZOffset;
     const depthScale = baseScale * (0.45 + env.coreVisibility * 0.55);
 
     group.scale.set(depthScale, depthScale, depthScale);
     group.position.set(baseX, baseY, depthZ);
 
-    // Material opacities
+    // Material opacities & biolume emissions
     smokyFacetMat.opacity = 0.78 * env.coreVisibility;
     biolumeInnerMat.opacity = 0.85 * env.coreVisibility;
+    biolumeInnerMat.emissiveIntensity =
+      (0.55 + signalBiolumeBoost) * env.coreVisibility;
 
-    // 5. Pointer reaction (Desktop only, damped down in focus and resting states)
+    // Warm brass edge response on package inspection
+    brassMat.emissive.setHex(0xc8a24a);
+    brassMat.emissiveIntensity = signalBrassWarmth * env.coreVisibility;
+
+    // 6. Pointer reaction (Desktop only, damped down in focus and resting states)
     if (enablePointer) {
       const pointerFactor = 1.0 - env.coreResting * 0.65;
-      const targetYaw = pointer.x * 0.06 * pointerFactor;
-      const targetPitch = -pointer.y * 0.045 * pointerFactor;
-      group.rotation.y += (targetYaw - group.rotation.y) * Math.min(1, dt * 3.5);
-      group.rotation.x += (targetPitch - group.rotation.x) * Math.min(1, dt * 3.5);
+      const targetPointerYaw = pointer.x * 0.06 * pointerFactor + signalYawOffset;
+      const targetPointerPitch = -pointer.y * 0.045 * pointerFactor;
+      group.rotation.y += (targetPointerYaw - group.rotation.y) * Math.min(1, dt * 3.5);
+      group.rotation.x += (targetPointerPitch - group.rotation.x) * Math.min(1, dt * 3.5);
     } else {
-      group.rotation.y = 0;
+      group.rotation.y = signalYawOffset;
       group.rotation.x = 0;
     }
   };

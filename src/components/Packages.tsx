@@ -9,15 +9,18 @@ export function Packages() {
           title={site.packages.title}
           intro={site.packages.intro}
           depth="3100 m — approaching the floor"
+          data-reveal
         />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {site.packages.tiers.map((tier) => (
+          {site.packages.tiers.map((tier, idx) => (
             <div
               key={tier.name}
-              className={`flex flex-col rounded-xl border p-7 sm:p-8 transition-all duration-200 ${
+              data-experience-signal="package"
+              data-experience-index={idx}
+              className={`flex flex-col rounded-xl border p-7 sm:p-8 transition-all duration-200 focus-within:border-shelf ${
                 tier.featured
                   ? "border-t-2 border-t-biolume border-shelf/90 bg-gradient-to-b from-deep/90 to-abyss-2 shadow-[0_20px_48px_-20px_rgba(49,224,190,0.18)]"
-                  : "border-t-2 border-t-brass/80 border-shelf/70 bg-deep/30 hover:border-shelf hover:bg-deep/40"
+                  : "border-t-2 border-t-brass/80 border-shelf/70 bg-deep/30 hover:border-shelf hover:bg-deep/40 focus-within:bg-deep/40"
               }`}
             >
               <div className="flex items-baseline justify-between gap-2">
@@ -44,7 +47,7 @@ export function Packages() {
               </ul>
               <a
                 href={site.nav.action.href}
-                className={`mt-8 inline-flex min-h-12 items-center justify-center rounded-full px-5 py-3 text-sm font-medium tracking-tight transition-all duration-200 active:scale-[0.98] ${
+                className={`mt-8 inline-flex min-h-12 items-center justify-center rounded-full px-5 py-3 text-sm font-medium tracking-tight transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-biolume ${
                   tier.featured
                     ? "bg-biolume text-abyss hover:bg-seaglass hover:shadow-[0_0_24px_-4px_var(--color-biolume)]"
                     : "border border-shelf bg-deep/20 text-seaglass hover:border-biolume hover:text-biolume hover:bg-deep/40"

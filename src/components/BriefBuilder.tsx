@@ -2,17 +2,20 @@
 
 import { useMemo, useState } from "react";
 import { site } from "@/content/site";
+import { useExperience } from "@/experience/ExperienceContext";
 import { Container, GoldRule } from "./primitives";
 
 const { brief } = site;
 type Answers = Record<string, string[]>;
 
 export function BriefBuilder() {
+  const { triggerSignal } = useExperience();
   const [answers, setAnswers] = useState<Answers>({});
   const [copied, setCopied] = useState(false);
 
   const toggle = (stepId: string, option: string, multi: boolean) => {
     setCopied(false);
+    triggerSignal("brief-pulse");
     setAnswers((prev) => {
       const current = prev[stepId] ?? [];
       if (multi) {
@@ -67,7 +70,7 @@ export function BriefBuilder() {
   return (
     <section id="brief" className="scroll-mt-24 border-y border-shelf-dim/80 bg-abyss-2/95 pt-28 pb-32 sm:pt-36 sm:pb-40">
       <Container>
-        <header className="mb-14 max-w-[48ch]">
+        <header data-reveal className="mb-14 max-w-[48ch]">
           <div className="mb-5 flex items-center gap-4">
             <GoldRule />
             <span className="readout inline-flex items-center gap-2 text-tide/90">

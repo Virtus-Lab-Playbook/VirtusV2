@@ -9,12 +9,15 @@ export function Services() {
           title={site.services.title}
           intro={site.services.intro}
           depth="0210 m — continental shelf"
+          data-reveal
         />
         {/* structured capability matrix */}
         <div className="grid grid-cols-1 border-t border-shelf-dim/80 sm:grid-cols-2">
           {site.services.pillars.map((p, idx) => (
             <div
               key={p.id}
+              data-experience-signal="service"
+              data-experience-index={idx}
               className="group relative border-b border-shelf-dim/80 py-9 transition-all duration-200 hover:bg-deep/30 sm:odd:border-r sm:odd:pr-12 sm:even:pl-12"
             >
               <span

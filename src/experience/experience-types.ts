@@ -40,6 +40,23 @@ export interface QualityConfig {
   isStatic: boolean;
 }
 
+export type ExperienceSignalType =
+  | "service"
+  | "process"
+  | "work"
+  | "brief-pulse"
+  | "package"
+  | null;
+
+export interface SignalState {
+  activeSignal: ExperienceSignalType;
+  activeSignalIndex: number;
+  signalSource: "pointer" | "keyboard" | null;
+}
+
 export interface ExperienceContextValue extends DepthState {
   qualityConfig: QualityConfig;
+  signalState: SignalState;
+  triggerSignal: (type: ExperienceSignalType, index?: number) => void;
+  resetSignal: () => void;
 }
