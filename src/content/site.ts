@@ -94,6 +94,11 @@ export const site = {
         pillar: "Brand & Design",
         depth: "0420 m",
         desc: "Identity and packaging for a coastal roaster — a wordmark built from a single continuous stroke.",
+        image:
+          "https://images.pexels.com/photos/29795384/pexels-photo-29795384.jpeg?auto=compress&cs=tinysrgb&w=1600",
+        imageAlt:
+          "Placeholder stock visual of a minimalist coffee package used to represent the Tidewater Coffee lab project.",
+        visualCredit: "Mock visual · Pexels",
       },
       {
         id: "meridian",
@@ -102,6 +107,11 @@ export const site = {
         pillar: "Web",
         depth: "0980 m",
         desc: "A calm, bookable site for a multi-location practice, with plain-language patient information.",
+        image:
+          "https://images.pexels.com/photos/8015460/pexels-photo-8015460.jpeg?auto=compress&cs=tinysrgb&w=1600",
+        imageAlt:
+          "Placeholder stock visual of clean white product containers used to represent the Meridian Clinic lab project.",
+        visualCredit: "Mock visual · Pexels",
       },
       {
         id: "harbor",
@@ -110,6 +120,11 @@ export const site = {
         pillar: "AI & Automation",
         depth: "1600 m",
         desc: "A quoting assistant that turns a rough parts list into a costed estimate in under a minute.",
+        image:
+          "https://images.pexels.com/photos/24244230/pexels-photo-24244230.jpeg?auto=compress&cs=tinysrgb&w=1600",
+        imageAlt:
+          "Placeholder stock visual of a logistics container terminal used to represent the Harbor Freight Co-op lab project.",
+        visualCredit: "Mock visual · Pexels",
       },
     ],
   },

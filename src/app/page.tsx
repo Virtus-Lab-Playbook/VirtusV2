@@ -2,6 +2,7 @@ import { Nav } from "@/components/Nav";
 import { DepthRail } from "@/components/DepthRail";
 import { Hero } from "@/components/Hero";
 import { TrustStrip } from "@/components/TrustStrip";
+import { DisciplineMarquee } from "@/components/DisciplineMarquee";
 import { Contour } from "@/components/Contour";
 import { Services } from "@/components/Services";
 import { Process } from "@/components/Process";
@@ -33,6 +34,7 @@ export default function Home() {
       <main id="main" tabIndex={-1} className="relative z-[1] outline-none">
         <Hero />
         <TrustStrip />
+        <DisciplineMarquee />
         <Contour animate />
         <Services />
         <Process />

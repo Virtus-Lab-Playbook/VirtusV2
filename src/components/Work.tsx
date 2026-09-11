@@ -1,122 +1,280 @@
+"use client";
+
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { site } from "@/content/site";
-import { Container, SectionHeader } from "./primitives";
+import { useExperience } from "@/experience/ExperienceContext";
+import { Container, GoldRule } from "./primitives";
 
-/** Sonar sweep — abstract nautical chart imagery drawn with vector precision. */
-function Sonar({ id }: { id: string }) {
-  return (
-    <div className="relative h-full w-full overflow-hidden bg-gradient-to-b from-abyss-2 to-abyss">
-      {/* Background cartographic grid */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-shelf-dim)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-shelf-dim)_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] opacity-25"
-      />
-      <svg
-        viewBox="0 0 240 130"
-        className="relative h-full w-full"
-        fill="none"
-        aria-hidden
-        preserveAspectRatio="xMidYMid slice"
-      >
-        {/* Concentric bathymetric range rings */}
-        {[24, 48, 72, 96, 120].map((r) => (
-          <circle
-            key={r}
-            cx="48"
-            cy="124"
-            r={r}
-            stroke="var(--color-shelf)"
-            strokeOpacity={0.35}
-            strokeDasharray="2 4"
-          />
-        ))}
+const WORK_START_DEPTH = 1600;
+const WORK_NEXT_SECTION_DEPTH = 2400;
 
-        {/* Sonar sweep beam */}
-        <path
-          d="M48 124 L 204 28"
-          stroke={`url(#sonar-beam-${id})`}
-          strokeWidth="1.5"
-          strokeOpacity="0.85"
-        />
+/**
+ * Finish horizontal travel before the sticky stage releases.
+ * The remaining pinned distance becomes a short visual hold on the final project.
+ */
+const TRACK_COMPLETE_BEFORE_RELEASE = 0.9;
 
-        {/* Range ray */}
-        <line
-          x1="48"
-          y1="124"
-          x2="220"
-          y2="80"
-          stroke="var(--color-shelf-dim)"
-          strokeOpacity="0.5"
-        />
-
-        <defs>
-          <linearGradient
-            id={`sonar-beam-${id}`}
-            x1="48"
-            y1="124"
-            x2="204"
-            y2="28"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stopColor="var(--color-biolume)" stopOpacity="0" />
-            <stop offset="0.6" stopColor="var(--color-biolume)" stopOpacity="0.4" />
-            <stop offset="1" stopColor="var(--color-biolume)" stopOpacity="1" />
-          </linearGradient>
-        </defs>
-
-        {/* Target contact beacon */}
-        <circle cx="188" cy="40" r="3" fill="var(--color-biolume)" />
-        <circle
-          cx="188"
-          cy="40"
-          r="7"
-          stroke="var(--color-biolume)"
-          strokeOpacity="0.45"
-          className="animate-ping [animation-duration:3s]"
-        />
-      </svg>
-    </div>
-  );
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
 }
 
+function formatIndex(index: number): string {
+  return String(index + 1).padStart(2, "0");
+}
+
+type WorkMetrics = {
+  travel: number;
+  trackEndDepth: number;
+};
+
+const initialMetrics: WorkMetrics = {
+  travel: 0,
+  trackEndDepth: 2080,
+};
+
 export function Work() {
+  const { rawDepth } = useExperience();
+
+  const sectionRef = useRef<HTMLElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const [metrics, setMetrics] = useState<WorkMetrics>(initialMetrics);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const sticky = stickyRef.current;
+    const viewport = viewportRef.current;
+    const track = trackRef.current;
+
+    if (!section || !sticky || !viewport || !track) return;
+
+    const measure = () => {
+      const cards = Array.from(
+        track.querySelectorAll<HTMLElement>("[data-work-card]"),
+      );
+
+      const lastCard = cards.at(-1);
+
+      /*
+       * Do not use scrollWidth - clientWidth here.
+       *
+       * We want the final project to reach the same lead position as the first
+       * project, not merely become fully contained at the right edge.
+       */
+      const nextTravel = lastCard
+        ? Math.max(0, lastCard.offsetLeft)
+        : Math.max(0, track.scrollWidth - viewport.clientWidth);
+
+      /*
+       * The global depth system maps 1600 -> 2400 between #work and #why-us.
+       *
+       * A sticky child stops being pinned before the section itself ends:
+       *
+       * sticky scroll distance = sectionHeight - stickyHeight
+       *
+       * Convert that physical release point back into the same depth interval,
+       * then complete the horizontal rail slightly before release so the final
+       * project receives a brief dwell.
+       */
+      const sectionHeight = Math.max(1, section.offsetHeight);
+      const stickyHeight = Math.min(
+        sectionHeight,
+        Math.max(1, sticky.offsetHeight),
+      );
+
+      const pinnedFraction = clamp01(
+        (sectionHeight - stickyHeight) / sectionHeight,
+      );
+
+      const releaseDepth =
+        WORK_START_DEPTH +
+        (WORK_NEXT_SECTION_DEPTH - WORK_START_DEPTH) * pinnedFraction;
+
+      const nextTrackEndDepth =
+        WORK_START_DEPTH +
+        (releaseDepth - WORK_START_DEPTH) *
+          TRACK_COMPLETE_BEFORE_RELEASE;
+
+      setMetrics((current) => {
+        if (
+          Math.abs(current.travel - nextTravel) < 0.5 &&
+          Math.abs(current.trackEndDepth - nextTrackEndDepth) < 0.5
+        ) {
+          return current;
+        }
+
+        return {
+          travel: nextTravel,
+          trackEndDepth: nextTrackEndDepth,
+        };
+      });
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(measure);
+
+    observer.observe(section);
+    observer.observe(sticky);
+    observer.observe(viewport);
+    observer.observe(track);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const depthSpan = Math.max(
+    1,
+    metrics.trackEndDepth - WORK_START_DEPTH,
+  );
+
+  const progress = clamp01(
+    (rawDepth - WORK_START_DEPTH) / depthSpan,
+  );
+
+  const translateX = metrics.travel * progress;
+  const projectCount = site.work.projects.length;
+
+  const activeIndex = Math.min(
+    projectCount - 1,
+    Math.max(0, Math.round(progress * (projectCount - 1))),
+  );
+
   return (
-    <section id="work" className="scroll-mt-24 pt-24 pb-32 sm:pt-32 sm:pb-40">
-      <Container>
-        <SectionHeader
-          title={site.work.title}
-          intro={site.work.intro}
-          depth="1600 m — bathypelagic"
-          data-reveal
-        />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {site.work.projects.map((proj, idx) => (
-            <article
-              key={proj.id}
-              data-reveal
-              data-experience-signal="work"
-              data-experience-index={idx}
-              className="group flex flex-col overflow-hidden rounded-xl border border-shelf/80 bg-deep/50 transition-all duration-300 hover:-translate-y-1.5 hover:border-shelf hover:shadow-[0_24px_48px_-20px_rgba(49,224,190,0.14)]"
+    <section
+      ref={sectionRef}
+      id="work"
+      aria-labelledby="work-title"
+      className="work-showcase relative scroll-mt-24"
+    >
+      <div ref={stickyRef} className="work-showcase__sticky">
+        <Container className="flex h-full min-h-0 flex-col pt-16 pb-6 sm:pt-20 sm:pb-8">
+          <header
+            data-reveal
+            className="flex shrink-0 items-end justify-between gap-8"
+          >
+            <div className="max-w-[48rem]">
+              <div className="mb-3 flex items-center gap-4">
+                <GoldRule />
+                <span className="readout inline-flex items-center gap-2 text-tide/90">
+                  <span
+                    aria-hidden
+                    className="h-1.5 w-1.5 rounded-full bg-biolume shadow-[0_0_8px_1px_var(--color-biolume)]"
+                  />
+                  1600 m — bathypelagic
+                </span>
+              </div>
+
+              <h2
+                id="work-title"
+                className="font-display text-[clamp(2.7rem,5.4vw,5.4rem)] leading-[0.92] tracking-[-0.035em] text-seaglass"
+              >
+                {site.work.title}
+              </h2>
+
+              <p className="mt-3 max-w-[58ch] text-sm leading-relaxed text-tide sm:text-base">
+                {site.work.intro}
+              </p>
+            </div>
+
+            <div
+              className="hidden shrink-0 items-baseline gap-2 pb-1 md:flex"
+              aria-label={`Project ${activeIndex + 1} of ${projectCount}`}
             >
-              <div className="h-36 border-b border-shelf-dim/80">
-                <Sonar id={proj.id} />
-              </div>
-              <div className="flex flex-1 flex-col p-6 sm:p-7">
-                <div className="mb-3.5 flex items-center justify-between gap-2">
-                  <span className="rounded-full border border-brass/40 bg-brass/10 px-2.5 py-0.5 text-[0.68rem] font-medium text-brass">
-                    {proj.kind}
-                  </span>
-                  <span className="readout text-tide/80">{proj.depth}</span>
-                </div>
-                <h3 className="text-h3 font-sans font-semibold text-seaglass transition-colors duration-200 group-hover:text-biolume">
-                  {proj.name}
-                </h3>
-                <p className="mt-1 text-[0.82rem] font-medium text-tide/75">{proj.pillar}</p>
-                <p className="mt-3.5 flex-1 text-sm leading-relaxed text-tide">{proj.desc}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </Container>
+              <span className="font-mono text-2xl font-semibold tabular-nums text-biolume">
+                {formatIndex(activeIndex)}
+              </span>
+              <span className="readout text-tide/55">/</span>
+              <span className="readout tabular-nums text-tide/75">
+                {String(projectCount).padStart(2, "0")}
+              </span>
+            </div>
+          </header>
+
+          <div
+            ref={viewportRef}
+            className="work-showcase__viewport mt-6 min-h-0 flex-1 sm:mt-7"
+          >
+            <div
+              ref={trackRef}
+              className="work-showcase__track"
+              style={{
+                transform: `translate3d(${-translateX}px, 0, 0)`,
+              }}
+            >
+              {site.work.projects.map((project, index) => (
+                <article
+                  key={project.id}
+                  data-work-card
+                  data-experience-signal="work"
+                  data-experience-index={index}
+                  className="work-showcase__card group"
+                >
+                  <div className="work-showcase__media">
+                    <Image
+                      src={project.image}
+                      alt={project.imageAlt}
+                      fill
+                      sizes="(max-width: 767px) 86vw, (max-width: 1279px) 68vw, 52rem"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.025]"
+                    />
+
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 bg-gradient-to-t from-abyss/60 via-transparent to-transparent"
+                    />
+
+                    <div className="absolute bottom-3 right-3 rounded-full border border-seaglass/15 bg-abyss/75 px-2.5 py-1 backdrop-blur-sm">
+                      <span className="readout text-[0.6rem] uppercase tracking-[0.12em] text-tide/80">
+                        {project.visualCredit}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="work-showcase__meta mt-4 grid gap-3 border-t border-shelf-dim/80 pt-3.5 sm:grid-cols-[1fr_auto] sm:items-start">
+                    <div>
+                      <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
+                        <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-biolume">
+                          {formatIndex(index)}
+                        </span>
+                        <span
+                          aria-hidden
+                          className="h-1 w-1 rounded-full bg-brass"
+                        />
+                        <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-tide/75">
+                          {project.kind}
+                        </span>
+                      </div>
+
+                      <h3 className="font-display text-[clamp(1.55rem,2.5vw,2.65rem)] leading-[0.98] tracking-[-0.025em] text-seaglass transition-colors duration-200 group-hover:text-biolume">
+                        {project.name}
+                      </h3>
+
+                      <p className="mt-1.5 text-sm font-medium text-brass/90">
+                        {project.pillar}
+                      </p>
+
+                      <p className="mt-2 max-w-[58ch] text-[0.84rem] leading-relaxed text-tide">
+                        {project.desc}
+                      </p>
+                    </div>
+
+                    <span className="readout tabular-nums text-tide/65">
+                      {project.depth}
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </div>
     </section>
   );
 }

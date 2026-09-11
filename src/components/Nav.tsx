@@ -18,7 +18,7 @@ export function Nav() {
     activeNavHref = "#services";
   } else if (smoothedDepth >= 650 && smoothedDepth < 1350) {
     activeNavHref = "#process";
-  } else if (smoothedDepth >= 1350 && smoothedDepth < 2100) {
+  } else if (smoothedDepth >= 1350 && smoothedDepth < 2400) {
     activeNavHref = "#work";
   } else if (smoothedDepth >= 2900 && smoothedDepth < 3500) {
     activeNavHref = "#packages";

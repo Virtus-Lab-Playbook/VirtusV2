@@ -196,3 +196,218 @@
     transform: scaleY(1);
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Virtus Work Showcase — depth-driven horizontal project rail                */
+/* -------------------------------------------------------------------------- */
+
+.work-showcase {
+  min-height: 300vh;
+}
+
+.work-showcase__sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  border-top: 1px solid var(--color-shelf-dim);
+  border-bottom: 1px solid var(--color-shelf-dim);
+  background:
+    radial-gradient(
+      circle at 72% 38%,
+      color-mix(in oklab, var(--color-deep) 42%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-abyss-2) 96%, transparent),
+      var(--color-abyss)
+    );
+}
+
+.work-showcase__viewport {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.work-showcase__track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  align-items: stretch;
+  gap: clamp(1.25rem, 2.2vw, 2rem);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.work-showcase__card {
+  display: flex;
+  min-height: 0;
+  height: 100%;
+  flex: 0 0 clamp(20rem, 68vw, 52rem);
+  flex-direction: column;
+}
+
+.work-showcase__media {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--color-shelf) 72%, transparent);
+  background: var(--color-deep);
+}
+
+.work-showcase__meta {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 767.98px) {
+  .work-showcase {
+    min-height: auto;
+    padding-block: 5rem;
+  }
+
+  .work-showcase__sticky {
+    position: relative;
+    top: auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  .work-showcase__viewport {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .work-showcase__viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .work-showcase__track {
+    height: auto;
+    transform: none !important;
+    align-items: stretch;
+    will-change: auto;
+  }
+
+  .work-showcase__card {
+    height: auto;
+    flex-basis: min(86vw, 32rem);
+    scroll-snap-align: start;
+  }
+
+  .work-showcase__media {
+    height: clamp(18rem, 62vw, 26rem);
+    min-height: clamp(18rem, 62vw, 26rem);
+    flex: none;
+  }
+}
+
+/* Virtus Discipline Marquee */
+
+.discipline-marquee {
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-shelf-dim);
+  background: color-mix(in oklab, var(--color-abyss) 94%, transparent);
+}
+
+.discipline-marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: discipline-marquee-loop 26s linear infinite;
+}
+
+.discipline-marquee__group {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+.discipline-marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2rem;
+  padding-block: 0.8rem;
+  padding-inline: clamp(1.6rem, 3vw, 3rem);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-tide) 78%, transparent);
+}
+
+.discipline-marquee__diamond {
+  width: 0.32rem;
+  height: 0.32rem;
+  flex: none;
+  background: var(--color-biolume);
+  transform: rotate(45deg);
+  box-shadow: 0 0 9px color-mix(in oklab, var(--color-biolume) 42%, transparent);
+}
+
+@keyframes discipline-marquee-loop {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-showcase {
+    min-height: auto;
+    padding-block: 5rem;
+  }
+
+  .work-showcase__sticky {
+    position: relative;
+    top: auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  .work-showcase__viewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .work-showcase__track {
+    height: auto;
+    transform: none !important;
+    will-change: auto;
+  }
+
+  .work-showcase__card {
+    height: auto;
+    scroll-snap-align: start;
+  }
+
+  .work-showcase__media {
+    height: clamp(18rem, 55vw, 28rem);
+    min-height: clamp(18rem, 55vw, 28rem);
+    flex: none;
+  }
+
+  .discipline-marquee {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .discipline-marquee__track {
+    animation: none;
+    will-change: auto;
+  }
+
+  .discipline-marquee__group--clone {
+    display: none;
+  }
+}
