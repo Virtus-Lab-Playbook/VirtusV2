@@ -33,6 +33,15 @@ export interface DepthState {
   currentZone: DepthZone;   // Active conceptual depth zone
 }
 
+export interface ExperienceMotionStore {
+  getState: () => DepthState;
+  subscribe: (
+    listener: (
+      state: DepthState,
+    ) => void,
+  ) => () => void;
+}
+
 export interface QualityConfig {
   quality: SceneQuality;
   maxDpr: number;
@@ -56,9 +65,13 @@ export interface SignalState {
   signalSource: "pointer" | "keyboard" | null;
 }
 
-export interface ExperienceContextValue extends DepthState {
+export interface ExperienceContextValue {
+  motionStore: ExperienceMotionStore;
   qualityConfig: QualityConfig;
   signalState: SignalState;
-  triggerSignal: (type: ExperienceSignalType, index?: number) => void;
+  triggerSignal: (
+    type: ExperienceSignalType,
+    index?: number,
+  ) => void;
   resetSignal: () => void;
 }

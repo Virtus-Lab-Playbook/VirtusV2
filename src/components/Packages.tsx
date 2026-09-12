@@ -1,5 +1,6 @@
 import { site } from "@/content/site";
 import { Container, SectionHeader } from "./primitives";
+import { BriefIntentLink } from "./BriefIntentLink";
 
 export function Engagements() {
   return (
@@ -58,18 +59,19 @@ export function Engagements() {
                 </ul>
               </div>
 
-              <a
-                href={site.nav.action.href}
+              <BriefIntentLink
+                href="#brief"
+                engagement={model.name}
                 className="group mt-8 inline-flex items-center gap-2 text-sm font-semibold text-seaglass"
               >
-                {site.nav.action.label}
+                Choose {model.name}
                 <span
                   aria-hidden
                   className="transition-transform duration-200 group-hover:translate-x-1"
                 >
                   →
                 </span>
-              </a>
+              </BriefIntentLink>
             </article>
           ))}
         </div>

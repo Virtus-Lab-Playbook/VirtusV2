@@ -14,14 +14,14 @@ import { Faq } from "@/components/Faq";
 import { FinalCta } from "@/components/FinalCta";
 import { Footer } from "@/components/Footer";
 import { GlobalScrollScene } from "@/components/GlobalScrollScene";
-import { ImmersiveExperience } from "@/experience/ImmersiveExperience";
+import { ProgressiveImmersiveExperience } from "@/experience/ProgressiveImmersiveExperience";
 import { ExperienceProvider } from "@/experience/ExperienceContext";
 import { SECTION_DEPTHS } from "@/experience/experience-config";
 
 export default function Home() {
   return (
     <ExperienceProvider>
-      <ImmersiveExperience />
+      <ProgressiveImmersiveExperience />
 
       <a
         href="#main"
@@ -52,7 +52,7 @@ export default function Home() {
           previousDepth={SECTION_DEPTHS.work}
           depth={SECTION_DEPTHS.services}
           nextDepth={SECTION_DEPTHS.products}
-          className="bg-abyss-2"
+          className="global-scroll-scene--services-portal"
         >
           <Services />
         </GlobalScrollScene>
@@ -117,7 +117,7 @@ export default function Home() {
           depth={SECTION_DEPTHS.finalCta}
           nextDepth={SECTION_DEPTHS.footer}
           mode="terminal"
-          className="bg-seaglass"
+          className="global-scroll-scene--final-docking"
         >
           <FinalCta />
         </GlobalScrollScene>

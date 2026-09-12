@@ -107,14 +107,22 @@ function createWorkBeacons() {
  */
 export function ImmersiveExperience() {
   const mountRef = useRef<HTMLDivElement>(null);
-  const experience = useExperience();
-  const { quality, maxDpr, isStatic } = experience.qualityConfig;
+  const {
+    motionStore,
+    signalState,
+    qualityConfig,
+  } = useExperience();
 
-  // Maintain latest depthState in a ref to avoid recreating RAF on state updates
-  const depthStateRef = useRef(experience);
+  const {
+    quality,
+    maxDpr,
+    isStatic,
+  } = qualityConfig;
+
+  const signalStateRef = useRef(signalState);
   useEffect(() => {
-    depthStateRef.current = experience;
-  }, [experience]);
+    signalStateRef.current = signalState;
+  }, [signalState]);
 
   useEffect(() => {
     const el = mountRef.current;
@@ -233,6 +241,38 @@ export function ImmersiveExperience() {
     window.addEventListener("resize", onResize);
 
     // --- 10. Unified Render Loop ---
+    let lastRenderedAt = 0;
+
+    function targetFpsForDepth(
+      depth: number,
+    ): number {
+      if (depth < 900) {
+        return 60;
+      }
+
+      if (depth < 1650) {
+        return 45;
+      }
+
+      if (depth < 2025) {
+        return 60;
+      }
+
+      if (depth < 3050) {
+        return 15;
+      }
+
+      if (depth < 3450) {
+        return 30;
+      }
+
+      if (depth < 3650) {
+        return 20;
+      }
+
+      return 60;
+    }
+
     const render = (now: number) => {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
@@ -260,7 +300,8 @@ export function ImmersiveExperience() {
         }
       }
 
-      const currentDepth = depthStateRef.current;
+      const currentDepth = motionStore.getState();
+      const currentSignal = signalStateRef.current;
       const vp = getViewport();
       const env = getEnvironmentState(currentDepth.smoothedDepth);
 
@@ -292,10 +333,10 @@ export function ImmersiveExperience() {
       abyssFloor.update(now * 0.001, env);
 
       // Update Bathypelagic Work project beacons
-      workBeacons.update(dt, currentDepth.smoothedDepth, currentDepth.signalState);
+      workBeacons.update(dt, currentDepth.smoothedDepth, currentSignal);
 
       // Update Virtus Core with supplementary scene signals
-      core.update(dt, now * 0.001, currentDepth, pointer, vp, currentDepth.signalState);
+      core.update(dt, now * 0.001, currentDepth, pointer, vp, currentSignal);
 
       // Dynamic lighting response based on depth & terminal state
       keyLight.intensity = 0.95 * env.topLight;
@@ -313,7 +354,16 @@ export function ImmersiveExperience() {
 
     const loop = (time: number) => {
       if (!running) return;
-      render(time);
+
+      const depth = motionStore.getState().smoothedDepth;
+      const targetFps = targetFpsForDepth(depth);
+      const minimumInterval = 1000 / targetFps;
+
+      if (time - lastRenderedAt >= minimumInterval) {
+        render(time);
+        lastRenderedAt = time;
+      }
+
       rafId = requestAnimationFrame(loop);
     };
 
@@ -361,7 +411,7 @@ export function ImmersiveExperience() {
     return () => {
       cleanup();
     };
-  }, [isStatic, maxDpr, quality]);
+  }, [isStatic, maxDpr, motionStore, quality]);
 
   return (
     <div

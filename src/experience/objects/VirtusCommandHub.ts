@@ -340,6 +340,20 @@ export function createVirtusCommandHub(
     signalState?: SignalState,
   ) => {
     const env = getEnvironmentState(depthState.smoothedDepth);
+    const servicePortalFactor =
+      THREE.MathUtils.smoothstep(
+        depthState.rawDepth,
+        1450,
+        1660,
+      ) *
+      (
+        1 -
+        THREE.MathUtils.smoothstep(
+          depthState.rawDepth,
+          1980,
+          2180,
+        )
+      );
     const turnMultiplier = viewportTurnMultiplier(viewport.width);
 
     // Use section-aware RAW depth to define the destination angle. Mechanical
@@ -479,8 +493,46 @@ export function createVirtusCommandHub(
       baseScale = 0.78;
     }
 
-    const depthZ = 0.5 + env.coreZOffset;
-    const depthScale = baseScale * (0.48 + env.coreVisibility * 0.52);
+    if (
+      viewport.width >= 1024
+    ) {
+      baseX =
+        THREE.MathUtils.lerp(
+          baseX,
+          2.48,
+          servicePortalFactor,
+        );
+
+      baseY =
+        THREE.MathUtils.lerp(
+          baseY,
+          0.08,
+          servicePortalFactor,
+        );
+    }
+
+    const presentationVisibility =
+      Math.max(
+        env.coreVisibility,
+        servicePortalFactor *
+          0.72,
+      );
+
+    const depthZ =
+      THREE.MathUtils.lerp(
+        0.5 +
+          env.coreZOffset,
+        -0.15,
+        servicePortalFactor,
+      );
+
+    const depthScale =
+      baseScale *
+      (
+        0.48 +
+        presentationVisibility *
+          0.52
+      );
 
     group.position.set(baseX, baseY, depthZ);
     group.scale.setScalar(depthScale);
@@ -504,11 +556,11 @@ export function createVirtusCommandHub(
     // -----------------------------------------------------------------------
     // Depth + signal material response
     // -----------------------------------------------------------------------
-    smokyCoreMat.opacity = 0.82 * env.coreVisibility;
-    biolumeMat.opacity = 0.9 * env.coreVisibility;
+    smokyCoreMat.opacity = 0.82 * presentationVisibility;
+    biolumeMat.opacity = 0.9 * presentationVisibility;
     biolumeMat.emissiveIntensity =
-      (0.62 + signalBiolumeBoost) * env.coreVisibility;
-    brassMat.emissiveIntensity = signalBrassWarmth * env.coreVisibility;
+      (0.62 + signalBiolumeBoost) * presentationVisibility;
+    brassMat.emissiveIntensity = signalBrassWarmth * presentationVisibility;
   };
 
   const dispose = () => {

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useMemo,
   useState,
   type FormEvent,
@@ -9,6 +10,12 @@ import { site } from "@/content/site";
 import type {
   BriefAnswers,
 } from "@/lib/brief-submission";
+import {
+  BRIEF_INTENT_EVENT,
+  clearBriefIntent,
+  readBriefIntent,
+  type BriefIntent,
+} from "@/lib/brief-intent";
 import { useExperience } from "@/experience/ExperienceContext";
 import { Container } from "./primitives";
 
@@ -45,6 +52,12 @@ export function BriefBuilder() {
     useState<BriefAnswers>({});
 
   const [
+    engagement,
+    setEngagement,
+  ] =
+    useState("");
+
+  const [
     contact,
     setContact,
   ] =
@@ -71,6 +84,125 @@ export function BriefBuilder() {
     setSubmissionError,
   ] =
     useState("");
+
+  useEffect(() => {
+    const applyIntent = (
+      intent:
+        BriefIntent,
+    ) => {
+      let applied =
+        false;
+
+      if (intent.need) {
+        const needStep =
+          brief.steps.find(
+            (step) =>
+              step.id ===
+              "need",
+          );
+
+        const allowedNeeds =
+          (
+            needStep?.options ??
+            []
+          ) as readonly string[];
+
+        if (
+          allowedNeeds.includes(
+            intent.need,
+          )
+        ) {
+          setAnswers(
+            (previous) => {
+              const current =
+                previous.need ??
+                [];
+
+              if (
+                current.includes(
+                  intent.need as string,
+                )
+              ) {
+                return previous;
+              }
+
+              return {
+                ...previous,
+                need: [
+                  ...current,
+                  intent.need as string,
+                ],
+              };
+            },
+          );
+
+          applied =
+            true;
+        }
+      }
+
+      if (
+        intent.engagement
+      ) {
+        const allowed =
+          site.engagements
+            .models.some(
+              (model) =>
+                model.name ===
+                intent.engagement,
+            );
+
+        if (allowed) {
+          setEngagement(
+            intent.engagement,
+          );
+
+          applied =
+            true;
+        }
+      }
+
+      if (applied) {
+        setCopied(false);
+        setStatus("idle");
+        setSubmissionError("");
+
+        triggerSignal(
+          "brief-pulse",
+        );
+      }
+
+      clearBriefIntent();
+    };
+
+    applyIntent(
+      readBriefIntent(),
+    );
+
+    const onIntent = (
+      event: Event,
+    ) => {
+      const custom =
+        event as
+          CustomEvent<BriefIntent>;
+
+      applyIntent(
+        custom.detail ?? {},
+      );
+    };
+
+    window.addEventListener(
+      BRIEF_INTENT_EVENT,
+      onIntent,
+    );
+
+    return () => {
+      window.removeEventListener(
+        BRIEF_INTENT_EVENT,
+        onIntent,
+      );
+    };
+  }, [triggerSignal]);
 
   const resetSubmissionState = () => {
     if (
@@ -180,6 +312,9 @@ export function BriefBuilder() {
 
     try {
       const contactLines = [
+        engagement
+          ? `Engagement preference: ${engagement}`
+          : null,
         contact.name.trim()
           ? `Name: ${contact.name.trim()}`
           : null,
@@ -252,6 +387,8 @@ export function BriefBuilder() {
     setContact(
       initialContact,
     );
+    setEngagement("");
+    clearBriefIntent();
     setCopied(false);
     setStatus("idle");
     setSubmissionError("");
@@ -309,6 +446,7 @@ export function BriefBuilder() {
               message:
                 contact.message,
               answers,
+              engagement,
               website,
               sourceUrl:
                 typeof window !==
@@ -730,6 +868,18 @@ export function BriefBuilder() {
                   }
                 </span>
               </div>
+
+              {engagement ? (
+                <div className="mb-4 border-l border-tide pl-3">
+                  <span className="readout text-[0.62rem] uppercase tracking-[0.12em] text-tide/65">
+                    Engagement
+                  </span>
+
+                  <p className="mt-1 text-sm font-semibold text-seaglass">
+                    {engagement}
+                  </p>
+                </div>
+              ) : null}
 
               {hasAnswers ? (
                 <dl className="flex flex-col gap-3.5 border-t border-shelf/50 pt-4">

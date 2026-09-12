@@ -7,6 +7,7 @@ import {
   ServiceRouteFooter,
   ServiceRouteNav,
 } from "@/components/ServiceRouteChrome";
+import { BriefIntentLink } from "@/components/BriefIntentLink";
 import { Container } from "@/components/primitives";
 import { createPageMetadata } from "@/lib/seo";
 import {
@@ -126,13 +127,14 @@ export default async function ServicePage({
                   {service.relatedWork}
                 </p>
 
-                <Link
+                <BriefIntentLink
                   href="/#brief"
+                  need={service.name}
                   className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-seaglass transition-colors hover:text-tide"
                 >
                   Build your brief
                   <span aria-hidden>→</span>
-                </Link>
+                </BriefIntentLink>
               </div>
             </div>
           </Container>

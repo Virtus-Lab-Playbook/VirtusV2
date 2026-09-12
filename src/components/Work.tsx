@@ -5,11 +5,10 @@ import Link from "next/link";
 import {
   useEffect,
   useRef,
-  useState,
   type CSSProperties,
 } from "react";
 import { site } from "@/content/site";
-import { useExperience } from "@/experience/ExperienceContext";
+import { useExperienceMotion } from "@/experience/hooks/useExperienceMotion";
 import { SECTION_DEPTHS } from "@/experience/experience-config";
 import { Container } from "./primitives";
 
@@ -33,6 +32,7 @@ const GALLERY_LAYOUTS = [
     y: "-7vh",
     width: "clamp(20rem, 29vw, 29rem)",
     aspect: "4 / 3",
+    parallax: 0.94,
   },
   {
     z: 80,
@@ -40,6 +40,7 @@ const GALLERY_LAYOUTS = [
     y: "5vh",
     width: "clamp(16rem, 22vw, 22rem)",
     aspect: "4 / 5",
+    parallax: 1.06,
   },
   {
     z: -230,
@@ -47,6 +48,7 @@ const GALLERY_LAYOUTS = [
     y: "-1vh",
     width: "clamp(22rem, 34vw, 34rem)",
     aspect: "16 / 10",
+    parallax: 0.90,
   },
   {
     z: 110,
@@ -54,6 +56,7 @@ const GALLERY_LAYOUTS = [
     y: "6vh",
     width: "clamp(17rem, 24vw, 24rem)",
     aspect: "3 / 4",
+    parallax: 1.08,
   },
   {
     z: -90,
@@ -61,6 +64,7 @@ const GALLERY_LAYOUTS = [
     y: "-8vh",
     width: "clamp(20rem, 30vw, 30rem)",
     aspect: "3 / 2",
+    parallax: 0.96,
   },
 ] as const;
 
@@ -70,6 +74,7 @@ type WorkMetrics = {
 };
 
 type WorkCardStyle = CSSProperties & {
+  "--work-x": string;
   "--work-z": string;
   "--work-y": string;
   "--work-scale": number;
@@ -91,15 +96,14 @@ function formatIndex(index: number): string {
 }
 
 export function Work() {
-  const { rawDepth, smoothedDepth } = useExperience();
-
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const [metrics, setMetrics] =
-    useState<WorkMetrics>(initialMetrics);
+  const cardsRef = useRef<HTMLElement[]>([]);
+  const metricsRef = useRef<WorkMetrics>(initialMetrics);
+  const activeIndexTextRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -115,6 +119,7 @@ export function Work() {
           "[data-work-card]",
         ),
       );
+      cardsRef.current = cards;
 
       const lastCard = cards.at(-1);
       const viewportWidth = Math.max(
@@ -150,24 +155,26 @@ export function Work() {
         (WORK_NEXT_SECTION_DEPTH - WORK_START_DEPTH) *
           pinnedFraction;
 
-      setMetrics((current) => {
-        const changed =
-          Math.abs(
-            current.travelDistance -
-              nextTravelDistance,
-          ) > 0.5 ||
-          Math.abs(
-            current.releaseDepth -
-              nextReleaseDepth,
-          ) > 0.5;
+      const current = metricsRef.current;
+      const changed =
+        Math.abs(
+          current.travelDistance -
+            nextTravelDistance,
+        ) > 0.5 ||
+        Math.abs(
+          current.releaseDepth -
+            nextReleaseDepth,
+        ) > 0.5;
 
-        if (!changed) return current;
-
-        return {
+      if (!changed) {
+        metricsRef.current = current;
+      } else {
+        const nextMetrics = {
           travelDistance: nextTravelDistance,
           releaseDepth: nextReleaseDepth,
         };
-      });
+        metricsRef.current = nextMetrics;
+      }
     };
 
     measure();
@@ -186,40 +193,122 @@ export function Work() {
     };
   }, []);
 
-  const pinnedDepthSpan = Math.max(
-    1,
-    metrics.releaseDepth - WORK_START_DEPTH,
-  );
+  const projectCount = site.work.projects.length;
 
-  const motionDepth =
-    rawDepth +
-    (smoothedDepth - rawDepth) *
-      WORK_DEPTH_SMOOTHING;
+  useExperienceMotion(
+    ({
+      rawDepth,
+      smoothedDepth,
+    }) => {
+      const track =
+        trackRef.current;
 
-  const motionDepthSpan = Math.max(
-    1,
-    pinnedDepthSpan * MOTION_FINISH_FRACTION,
-  );
+      if (!track) return;
 
-  const progress = clamp01(
-    (motionDepth - WORK_START_DEPTH) /
-      motionDepthSpan,
-  );
+      const currentMetrics =
+        metricsRef.current;
 
-  const trackX =
-    metrics.travelDistance * progress;
+      const pinnedDepthSpan =
+        Math.max(
+          1,
+          currentMetrics.releaseDepth -
+            WORK_START_DEPTH,
+        );
 
-  const projectCount =
-    site.work.projects.length;
+      const motionDepth =
+        rawDepth +
+        (
+          smoothedDepth -
+          rawDepth
+        ) *
+          WORK_DEPTH_SMOOTHING;
 
-  const activeIndex = Math.min(
-    projectCount - 1,
-    Math.max(
-      0,
-      Math.round(
-        progress * (projectCount - 1),
-      ),
-    ),
+      const motionDepthSpan =
+        Math.max(
+          1,
+          pinnedDepthSpan *
+            MOTION_FINISH_FRACTION,
+        );
+
+      const progress =
+        clamp01(
+          (
+            motionDepth -
+            WORK_START_DEPTH
+          ) /
+            motionDepthSpan,
+        );
+
+      const trackX =
+        currentMetrics
+          .travelDistance *
+        progress;
+
+      track.style.transform =
+        `translate3d(${
+          -trackX
+        }px, 0, 0)`;
+
+      cardsRef.current.forEach(
+        (
+          card,
+          index,
+        ) => {
+          const layout =
+            GALLERY_LAYOUTS[
+              index %
+                GALLERY_LAYOUTS.length
+            ];
+
+          const extraX =
+            -trackX *
+            (
+              layout.parallax -
+              1
+            );
+
+          card.style.setProperty(
+            "--work-x",
+            `${extraX}px`,
+          );
+        },
+      );
+
+      const count =
+        site.work.projects
+          .length;
+
+      const activeIndex =
+        Math.min(
+          count - 1,
+          Math.max(
+            0,
+            Math.round(
+              progress *
+                (
+                  count -
+                  1
+                ),
+            ),
+          ),
+        );
+
+      if (
+        activeIndexTextRef.current
+      ) {
+        activeIndexTextRef.current.textContent =
+          formatIndex(
+            activeIndex,
+          );
+
+        activeIndexTextRef.current.parentElement?.setAttribute(
+          "aria-label",
+          `Project ${
+            activeIndex + 1
+          } of ${count}`,
+        );
+      }
+    },
   );
 
   return (
@@ -270,10 +359,13 @@ export function Work() {
             <div className="hidden shrink-0 flex-col items-end gap-3 pb-1 md:flex">
               <div
                 className="flex items-baseline gap-2"
-                aria-label={`Project ${activeIndex + 1} of ${projectCount}`}
+                aria-label={`Project 1 of ${projectCount}`}
               >
-                <span className="font-mono text-2xl font-semibold tabular-nums text-seaglass">
-                  {formatIndex(activeIndex)}
+                <span
+                  ref={activeIndexTextRef}
+                  className="font-mono text-2xl font-semibold tabular-nums text-seaglass"
+                >
+                  01
                 </span>
 
                 <span className="readout text-shelf">
@@ -312,7 +404,7 @@ export function Work() {
             ref={trackRef}
             className="work-showcase__track"
             style={{
-              transform: `translate3d(${-trackX}px, 0, 0)`,
+              transform: "translate3d(0, 0, 0)",
             }}
           >
             {site.work.projects.map(
@@ -324,6 +416,7 @@ export function Work() {
                   ];
 
                 const cardStyle: WorkCardStyle = {
+                  "--work-x": "0px",
                   "--work-z": `${layout.z}px`,
                   "--work-y": layout.y,
                   "--work-scale": layout.scale,

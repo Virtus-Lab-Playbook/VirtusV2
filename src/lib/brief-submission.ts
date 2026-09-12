@@ -9,6 +9,7 @@ export type BriefSubmissionInput = {
   company?: string;
   message?: string;
   answers: BriefAnswers;
+  engagement?: string;
   website?: string;
   sourceUrl?: string;
 };
@@ -19,6 +20,7 @@ export type ValidBriefSubmission = {
   company: string;
   message: string;
   answers: BriefAnswers;
+  engagement: string;
   sourceUrl: string;
 };
 
@@ -289,6 +291,44 @@ export function validateBriefSubmission(
       2000,
     );
 
+  let engagement = "";
+
+  if (
+    input.engagement !==
+      undefined &&
+    input.engagement !==
+      null &&
+    input.engagement !==
+      ""
+  ) {
+    const candidate =
+      cleanSingleLine(
+        input.engagement,
+        60,
+      );
+
+    const allowed =
+      candidate
+        ? site.engagements
+            .models.some(
+              (model) =>
+                model.name ===
+                candidate,
+            )
+        : false;
+
+    if (!allowed) {
+      return {
+        ok: false,
+        error:
+          "Invalid engagement preference.",
+      };
+    }
+
+    engagement =
+      candidate as string;
+  }
+
   const sourceUrl =
     cleanOptionalSingleLine(
       input.sourceUrl,
@@ -304,6 +344,7 @@ export function validateBriefSubmission(
       message,
       answers:
         answerResult.answers,
+      engagement,
       sourceUrl,
     },
   };
@@ -338,6 +379,10 @@ export function buildBriefEmailText(
     }`,
     "",
     "PROJECT BRIEF",
+    `Engagement preference: ${
+      submission.engagement ||
+      "Not provided"
+    }`,
     ...answerLines,
     "",
     "ADDITIONAL NOTE",

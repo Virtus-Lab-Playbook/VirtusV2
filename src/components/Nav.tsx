@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { site } from "@/content/site";
 import { useExperience } from "@/experience/ExperienceContext";
+import { useExperienceMotion } from "@/experience/hooks/useExperienceMotion";
 import { SECTION_DEPTHS } from "@/experience/experience-config";
 import { Wordmark } from "./Wordmark";
 
@@ -30,16 +31,48 @@ function getActiveHref(depth: number): string | null {
   return null;
 }
 
+type MotionNavState = {
+  lifted: boolean;
+  activeNavHref: string | null;
+  briefActive: boolean;
+};
+
 export function Nav() {
   const [open, setOpen] = useState(false);
-  const { smoothedDepth, rawDepth, resetSignal } = useExperience();
+  const { resetSignal } = useExperience();
 
-  const lifted = rawDepth > 15;
-  const activeNavHref = getActiveHref(smoothedDepth);
+  const [motionNav, setMotionNav] = useState<MotionNavState>({
+    lifted: false,
+    activeNavHref: null,
+    briefActive: false,
+  });
 
-  const briefActive =
-    smoothedDepth >= SECTION_DEPTHS.brief &&
-    smoothedDepth < SECTION_DEPTHS.faq;
+  const motionNavRef = useRef(motionNav);
+
+  useExperienceMotion(({ rawDepth, smoothedDepth }) => {
+    const next: MotionNavState = {
+      lifted: rawDepth > 15,
+      activeNavHref: getActiveHref(smoothedDepth),
+      briefActive:
+        smoothedDepth >= SECTION_DEPTHS.brief &&
+        smoothedDepth < SECTION_DEPTHS.faq,
+    };
+
+    const current = motionNavRef.current;
+
+    if (
+      current.lifted === next.lifted &&
+      current.activeNavHref === next.activeNavHref &&
+      current.briefActive === next.briefActive
+    ) {
+      return;
+    }
+
+    motionNavRef.current = next;
+    setMotionNav(next);
+  });
+
+  const { lifted, activeNavHref, briefActive } = motionNav;
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
