@@ -1056,6 +1056,201 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/* Services Index + Service Detail Routes                                      */
+/* -------------------------------------------------------------------------- */
+
+.service-index-row {
+  transition:
+    background-color 320ms ease,
+    border-color 320ms ease;
+}
+
+.service-index-row__edge {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--color-tide);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition:
+    transform 420ms
+      cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.service-index-row__index,
+.service-index-row__title,
+.service-index-row__arrow {
+  transition:
+    transform 360ms
+      cubic-bezier(0.16, 1, 0.3, 1),
+    color 280ms ease;
+}
+
+.service-capability-row {
+  transition:
+    background-color 280ms ease,
+    padding-left 360ms
+      cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.service-related-work__media {
+  isolation: isolate;
+}
+
+.service-related-work__image {
+  filter:
+    grayscale(0.92)
+    saturate(0.34)
+    brightness(0.84);
+  transform: scale(1.01);
+  transition:
+    filter 480ms
+      cubic-bezier(0.16, 1, 0.3, 1),
+    transform 620ms
+      cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.service-related-work__action {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  opacity: 0;
+  transform: translate(-50%, -38%);
+  padding: 0.65rem 0.85rem;
+  border: 1px solid
+    color-mix(
+      in oklab,
+      var(--color-seaglass) 56%,
+      transparent
+    );
+  background:
+    color-mix(
+      in oklab,
+      var(--color-abyss) 78%,
+      transparent
+    );
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  transition:
+    opacity 260ms ease,
+    transform 420ms
+      cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.service-next {
+  transition:
+    padding-left 420ms
+      cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .service-index-row:hover,
+  .service-index-row:focus-visible {
+    background:
+      color-mix(
+        in oklab,
+        var(--color-shelf) 11%,
+        transparent
+      );
+  }
+
+  .service-index-row:hover
+    .service-index-row__edge,
+  .service-index-row:focus-visible
+    .service-index-row__edge {
+    transform: scaleY(1);
+  }
+
+  .service-index-row:hover
+    .service-index-row__index,
+  .service-index-row:focus-visible
+    .service-index-row__index {
+    color: var(--color-seaglass);
+    transform: translateX(0.3rem);
+  }
+
+  .service-index-row:hover
+    .service-index-row__title,
+  .service-index-row:focus-visible
+    .service-index-row__title {
+    transform: translateX(0.3rem);
+  }
+
+  .service-index-row:hover
+    .service-index-row__arrow,
+  .service-index-row:focus-visible
+    .service-index-row__arrow {
+    transform: translateX(0.45rem);
+  }
+
+  .service-capability-row:hover {
+    padding-left: 0.35rem;
+    background:
+      color-mix(
+        in oklab,
+        var(--color-shelf) 8%,
+        transparent
+      );
+  }
+
+  .service-related-work:hover
+    .service-related-work__image,
+  .service-related-work:focus-visible
+    .service-related-work__image {
+    filter:
+      grayscale(0)
+      saturate(1)
+      brightness(1);
+    transform: scale(1.04);
+  }
+
+  .service-related-work:hover
+    .service-related-work__action,
+  .service-related-work:focus-visible
+    .service-related-work__action {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  .service-next:hover,
+  .service-next:focus-visible {
+    padding-left: 0.35rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .service-related-work__image {
+    filter: none;
+  }
+
+  .service-related-work__action {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-index-row,
+  .service-index-row *,
+  .service-capability-row,
+  .service-related-work__image,
+  .service-related-work__action,
+  .service-next,
+  .service-next * {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .service-related-work__image {
+    filter: none;
+  }
+
+  .service-related-work__action {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /* Premium Why Virtus reading rows                                             */
 /* -------------------------------------------------------------------------- */
 

@@ -182,6 +182,7 @@ export const site = {
     pillars: [
       {
         id: "brand",
+        slug: "brand",
         name: "Brand & Creative",
         outcome:
           "Build a brand people can recognize, remember and use consistently.",
@@ -199,6 +200,7 @@ export const site = {
       },
       {
         id: "web",
+        slug: "web",
         name: "Web & Digital",
         outcome:
           "Turn attention into a digital experience that is clear, fast and built to convert.",
@@ -216,6 +218,7 @@ export const site = {
       },
       {
         id: "content",
+        slug: "content",
         name: "Content & Video",
         outcome:
           "Turn ideas, launches and campaigns into content systems that keep producing.",
@@ -233,6 +236,7 @@ export const site = {
       },
       {
         id: "ai",
+        slug: "automation",
         name: "AI & Automation",
         outcome:
           "Remove repetitive work with AI-assisted systems designed around how your business actually operates.",
