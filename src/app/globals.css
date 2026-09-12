@@ -232,6 +232,69 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/* Premium Hero capability interaction                                        */
+/* -------------------------------------------------------------------------- */
+
+.hero-discipline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: default;
+  background: transparent;
+}
+
+.hero-discipline__dot {
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 999px;
+  background: var(--color-shelf);
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-tide) 0%, transparent);
+  transition:
+    background-color 280ms ease,
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 360ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-discipline:hover,
+  .hero-discipline:focus-visible {
+    border-color: color-mix(
+      in oklab,
+      var(--color-tide) 32%,
+      transparent
+    );
+    background: color-mix(
+      in oklab,
+      var(--color-deep-2) 42%,
+      transparent
+    );
+    color: var(--color-seaglass);
+    transform: translateY(-2px);
+  }
+
+  .hero-discipline:hover .hero-discipline__dot,
+  .hero-discipline:focus-visible .hero-discipline__dot {
+    background: var(--color-seaglass);
+    transform: scale(1.35);
+    box-shadow:
+      0 0 0 5px color-mix(
+        in oklab,
+        var(--color-tide) 12%,
+        transparent
+      );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-discipline,
+  .hero-discipline__dot {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /* Global Scroll Choreography — #28 content motion over fixed section surfaces */
 /* -------------------------------------------------------------------------- */
 
@@ -746,3 +809,431 @@
     display: none;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Premium Services rows                                                       */
+/* -------------------------------------------------------------------------- */
+
+.premium-service-row {
+  transition:
+    background-color 320ms ease,
+    border-color 320ms ease;
+}
+
+.premium-service-row__edge {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--color-tide);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-service-row__index,
+.premium-service-row__title,
+.premium-service-row__related,
+.premium-service-row__capability {
+  transition:
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 300ms ease,
+    opacity 300ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .premium-service-row:hover,
+  .premium-service-row:focus-visible {
+    background: color-mix(
+      in oklab,
+      var(--color-shelf) 11%,
+      transparent
+    );
+    border-color: color-mix(
+      in oklab,
+      var(--color-tide) 58%,
+      var(--color-shelf)
+    );
+  }
+
+  .premium-service-row:hover .premium-service-row__edge,
+  .premium-service-row:focus-visible .premium-service-row__edge {
+    transform: scaleY(1);
+  }
+
+  .premium-service-row:hover .premium-service-row__index,
+  .premium-service-row:focus-visible .premium-service-row__index {
+    color: var(--color-seaglass);
+    transform: translateX(0.35rem);
+  }
+
+  .premium-service-row:hover .premium-service-row__title,
+  .premium-service-row:focus-visible .premium-service-row__title {
+    transform: translateX(0.35rem);
+  }
+
+  .premium-service-row:hover .premium-service-row__related,
+  .premium-service-row:focus-visible .premium-service-row__related {
+    transform: translateX(-0.2rem);
+  }
+
+  .premium-service-row:hover .premium-service-row__capability,
+  .premium-service-row:focus-visible .premium-service-row__capability {
+    color: color-mix(
+      in oklab,
+      var(--color-seaglass) 82%,
+      var(--color-tide)
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Premium Why Virtus reading rows                                             */
+/* -------------------------------------------------------------------------- */
+
+.premium-why-row {
+  transition:
+    background-color 320ms ease,
+    border-color 320ms ease;
+}
+
+.premium-why-row__line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  width: 0;
+  background: var(--color-tide);
+  transition: width 460ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-why-row__index,
+.premium-why-row__title,
+.premium-why-row__copy {
+  transition:
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 280ms ease,
+    opacity 280ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .premium-why-row:hover,
+  .premium-why-row:focus-visible {
+    background: color-mix(
+      in oklab,
+      var(--color-deep-2) 26%,
+      transparent
+    );
+  }
+
+  .premium-why-row:hover .premium-why-row__line,
+  .premium-why-row:focus-visible .premium-why-row__line {
+    width: 100%;
+  }
+
+  .premium-why-row:hover .premium-why-row__index,
+  .premium-why-row:focus-visible .premium-why-row__index {
+    color: var(--color-seaglass);
+    transform: translateX(0.25rem);
+  }
+
+  .premium-why-row:hover .premium-why-row__title,
+  .premium-why-row:focus-visible .premium-why-row__title {
+    transform: translateX(0.25rem);
+  }
+
+  .premium-why-row:hover .premium-why-row__copy,
+  .premium-why-row:focus-visible .premium-why-row__copy {
+    color: color-mix(
+      in oklab,
+      var(--color-seaglass) 78%,
+      var(--color-tide)
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Premium Process rows                                                        */
+/* -------------------------------------------------------------------------- */
+
+.premium-process-row {
+  overflow: hidden;
+  transition:
+    background-color 320ms ease,
+    border-color 320ms ease;
+}
+
+.premium-process-row__progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: var(--color-tide);
+  transition: width 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-process-row__number,
+.premium-process-row__title,
+.premium-process-row__copy {
+  transition:
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 280ms ease,
+    opacity 280ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .premium-process-row:hover,
+  .premium-process-row:focus-visible {
+    background: color-mix(
+      in oklab,
+      var(--color-shelf) 10%,
+      transparent
+    );
+  }
+
+  .premium-process-row:hover .premium-process-row__progress,
+  .premium-process-row:focus-visible .premium-process-row__progress {
+    width: 100%;
+  }
+
+  .premium-process-row:hover .premium-process-row__number,
+  .premium-process-row:focus-visible .premium-process-row__number {
+    color: var(--color-seaglass);
+    transform: translateY(-0.15rem);
+  }
+
+  .premium-process-row:hover .premium-process-row__title,
+  .premium-process-row:focus-visible .premium-process-row__title {
+    transform: translateX(0.3rem);
+  }
+
+  .premium-process-row:hover .premium-process-row__copy,
+  .premium-process-row:focus-visible .premium-process-row__copy {
+    color: color-mix(
+      in oklab,
+      var(--color-seaglass) 78%,
+      var(--color-tide)
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Premium Product-family interaction                                          */
+/* -------------------------------------------------------------------------- */
+
+.premium-product-family {
+  transition:
+    background-color 320ms ease,
+    border-color 320ms ease;
+}
+
+.premium-product-family::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--color-deep-2);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-product-family__title,
+.premium-product-family__number,
+.premium-product-family__arrow {
+  transition:
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 280ms ease;
+}
+
+.premium-product-family__arrow {
+  opacity: 0.45;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .premium-product-family:hover,
+  .premium-product-family:focus-visible {
+    background: color-mix(
+      in oklab,
+      var(--color-abyss) 5%,
+      transparent
+    );
+  }
+
+  .premium-product-family:hover::before,
+  .premium-product-family:focus-visible::before {
+    transform: scaleY(1);
+  }
+
+  .premium-product-family:hover .premium-product-family__title,
+  .premium-product-family:focus-visible .premium-product-family__title {
+    transform: translateX(0.35rem);
+  }
+
+  .premium-product-family:hover .premium-product-family__number,
+  .premium-product-family:focus-visible .premium-product-family__number {
+    transform: translateX(0.2rem);
+  }
+
+  .premium-product-family:hover .premium-product-family__arrow,
+  .premium-product-family:focus-visible .premium-product-family__arrow {
+    opacity: 1;
+    transform: translate3d(0.3rem, -0.15rem, 0);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Premium Engagement models                                                   */
+/* -------------------------------------------------------------------------- */
+
+.premium-engagement {
+  transition:
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 320ms ease;
+}
+
+.premium-engagement__wash {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-seaglass) 7%, transparent),
+    transparent 72%
+  );
+  opacity: 0;
+  transform: translateY(1rem);
+  transition:
+    opacity 320ms ease,
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .premium-engagement:hover,
+  .premium-engagement:focus-visible {
+    transform: translateY(-0.3rem);
+  }
+
+  .premium-engagement:hover .premium-engagement__wash,
+  .premium-engagement:focus-visible .premium-engagement__wash {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* FAQ open / close polish                                                     */
+/* -------------------------------------------------------------------------- */
+
+.faq-answer-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 280ms ease;
+}
+
+details[open] > .faq-answer-grid {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.faq-answer-copy {
+  transform: translateY(-0.35rem);
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+details[open] .faq-answer-copy {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-answer-grid,
+  .faq-answer-copy {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Final CTA arrival                                                           */
+/* -------------------------------------------------------------------------- */
+
+.final-cta-arrival__rule {
+  width: 0;
+  transition: width 720ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.final-cta-arrival__line,
+.final-cta-arrival__subline,
+.final-cta-arrival__action {
+  opacity: 0;
+  transform: translateY(0.8rem);
+}
+
+.final-cta-arrival.is-revealed .final-cta-arrival__rule {
+  width: min(18rem, 46vw);
+}
+
+.final-cta-arrival.is-revealed .final-cta-arrival__line {
+  animation: premium-final-rise 640ms 100ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.final-cta-arrival.is-revealed .final-cta-arrival__subline {
+  animation: premium-final-rise 640ms 210ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.final-cta-arrival.is-revealed .final-cta-arrival__action {
+  animation: premium-final-rise 640ms 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes premium-final-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .final-cta-arrival__rule {
+    width: min(18rem, 46vw);
+    transition: none;
+  }
+
+  .final-cta-arrival__line,
+  .final-cta-arrival__subline,
+  .final-cta-arrival__action {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Shared premium focus                                                        */
+/* -------------------------------------------------------------------------- */
+
+.premium-service-row:focus-visible,
+.premium-why-row:focus-visible,
+.premium-process-row:focus-visible,
+.premium-product-family:focus-visible,
+.premium-engagement:focus-visible {
+  outline: 1px solid color-mix(
+    in oklab,
+    var(--color-tide) 72%,
+    transparent
+  );
+  outline-offset: -1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-service-row *,
+  .premium-why-row *,
+  .premium-process-row *,
+  .premium-product-family *,
+  .premium-engagement * {
+    transition-duration: 0.01ms !important;
+  }
+}
+

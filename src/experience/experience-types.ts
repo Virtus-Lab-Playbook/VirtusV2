@@ -41,7 +41,9 @@ export interface QualityConfig {
 }
 
 export type ExperienceSignalType =
+  | "discipline"
   | "service"
+  | "why"
   | "process"
   | "work"
   | "brief-pulse"

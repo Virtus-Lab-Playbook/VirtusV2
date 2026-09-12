@@ -37,6 +37,10 @@ export function Nav() {
   const lifted = rawDepth > 15;
   const activeNavHref = getActiveHref(smoothedDepth);
 
+  const briefActive =
+    smoothedDepth >= SECTION_DEPTHS.brief &&
+    smoothedDepth < SECTION_DEPTHS.faq;
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
 
@@ -99,7 +103,11 @@ export function Nav() {
 
           <a
             href={site.nav.action.href}
-            className="inline-flex min-h-10 items-center justify-center rounded-full bg-seaglass px-5 py-2 text-sm font-semibold tracking-tight text-abyss transition-all duration-200 hover:bg-tide active:scale-[0.98]"
+            className={`inline-flex min-h-10 items-center justify-center rounded-full px-5 py-2 text-sm font-semibold tracking-tight transition-all duration-300 active:scale-[0.98] ${
+              briefActive
+                ? "bg-tide text-abyss shadow-[0_0_0_4px_rgba(121,141,168,0.12)]"
+                : "bg-seaglass text-abyss hover:bg-tide"
+            }`}
           >
             {site.nav.action.label}
           </a>
@@ -164,7 +172,11 @@ export function Nav() {
             <a
               href={site.nav.action.href}
               onClick={() => setOpen(false)}
-              className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-seaglass px-5 py-3 text-sm font-semibold tracking-tight text-abyss transition-colors hover:bg-tide"
+              className={`mt-5 inline-flex min-h-12 items-center justify-center rounded-full px-5 py-3 text-sm font-semibold tracking-tight text-abyss transition-colors ${
+                briefActive
+                  ? "bg-tide"
+                  : "bg-seaglass hover:bg-tide"
+              }`}
             >
               {site.nav.action.label}
             </a>

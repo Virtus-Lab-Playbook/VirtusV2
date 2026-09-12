@@ -21,10 +21,11 @@ export function DigitalProducts() {
             <article
               key={family.id}
               data-reveal
-              className="group border-b border-deep-2/45 py-9 transition-colors duration-200 hover:bg-abyss/5 md:odd:border-r md:odd:pr-10 md:even:pl-10"
+              tabIndex={0}
+              className="premium-product-family group relative overflow-hidden border-b border-deep-2/45 py-9 outline-none md:odd:border-r md:odd:pr-10 md:even:pl-10"
             >
               <div className="mb-6 flex items-center justify-between gap-4">
-                <span className="font-mono text-xs font-medium tracking-[0.12em] text-deep-2">
+                <span className="premium-product-family__number font-mono text-xs font-medium tracking-[0.12em] text-deep-2">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <span className="font-mono text-[0.68rem] uppercase tracking-[0.12em] text-deep-2">
@@ -32,9 +33,16 @@ export function DigitalProducts() {
                 </span>
               </div>
 
-              <h3 className="font-display text-[clamp(1.8rem,3vw,3rem)] leading-[1] tracking-[-0.025em] text-abyss">
+              <h3 className="premium-product-family__title font-display text-[clamp(1.8rem,3vw,3rem)] leading-[1] tracking-[-0.025em] text-abyss">
                 {family.name}
               </h3>
+
+              <span
+                aria-hidden
+                className="premium-product-family__arrow mt-4 inline-block font-mono text-sm text-deep-2"
+              >
+                ↗
+              </span>
 
               <p className="mt-4 max-w-[42ch] text-[0.95rem] leading-relaxed text-deep-2">
                 {family.desc}

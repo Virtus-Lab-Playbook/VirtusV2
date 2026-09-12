@@ -22,8 +22,14 @@ export function Engagements() {
               data-reveal
               data-experience-signal="package"
               data-experience-index={index}
-              className="flex flex-col border-b border-seaglass/25 py-8 last:border-b-0 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0"
+              tabIndex={0}
+              className="premium-engagement group relative flex flex-col overflow-hidden border-b border-seaglass/25 py-8 outline-none last:border-b-0 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0"
             >
+              <span
+                aria-hidden
+                className="premium-engagement__wash"
+              />
+
               <span className="font-mono text-xs tracking-[0.12em] text-seaglass/70">
                 {String(index + 1).padStart(2, "0")}
               </span>

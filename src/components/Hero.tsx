@@ -64,14 +64,22 @@ export function Hero() {
           </div>
 
           <div className="hero-rise hero-rise-4 mt-10 border-t border-shelf/55 pt-5">
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {site.hero.disciplines.map((discipline) => (
-                <span
+            <div className="flex flex-wrap gap-x-2 gap-y-2">
+              {site.hero.disciplines.map((discipline, index) => (
+                <button
                   key={discipline}
-                  className="readout readout-caps text-tide/90"
+                  type="button"
+                  data-experience-signal="discipline"
+                  data-experience-index={index}
+                  aria-label={`Highlight ${discipline} in the Virtus Command Hub`}
+                  className="hero-discipline readout readout-caps rounded-full border border-transparent px-3 py-2 text-tide/88 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tide"
                 >
+                  <span
+                    aria-hidden
+                    className="hero-discipline__dot"
+                  />
                   {discipline}
-                </span>
+                </button>
               ))}
             </div>
           </div>

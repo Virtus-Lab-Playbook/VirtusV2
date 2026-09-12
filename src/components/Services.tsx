@@ -22,13 +22,19 @@ export function Services() {
               data-reveal
               data-experience-signal="service"
               data-experience-index={index}
-              className="group grid gap-5 border-b border-shelf/60 py-9 transition-colors duration-200 hover:bg-shelf/10 sm:grid-cols-[4.5rem_13rem_1fr] sm:gap-8 sm:py-10 lg:grid-cols-[5rem_17rem_1fr_auto]"
+              tabIndex={0}
+              className="premium-service-row group relative grid gap-5 overflow-hidden border-b border-shelf/60 py-9 outline-none sm:grid-cols-[4.5rem_13rem_1fr] sm:gap-8 sm:py-10 lg:grid-cols-[5rem_17rem_1fr_auto]"
             >
-              <span className="readout pt-1 text-tide">
+              <span
+                aria-hidden
+                className="premium-service-row__edge"
+              />
+
+              <span className="premium-service-row__index readout pt-1 text-tide">
                 {String(index + 1).padStart(2, "0")}
               </span>
 
-              <h3 className="font-sans text-xl font-semibold text-seaglass sm:text-2xl">
+              <h3 className="premium-service-row__title font-sans text-xl font-semibold text-seaglass sm:text-2xl">
                 {pillar.name}
               </h3>
 
@@ -41,7 +47,7 @@ export function Services() {
                   {pillar.capabilities.map((capability) => (
                     <span
                       key={capability}
-                      className="text-[0.8rem] text-tide"
+                      className="premium-service-row__capability text-[0.8rem] text-tide"
                     >
                       {capability}
                     </span>
@@ -49,13 +55,19 @@ export function Services() {
                 </div>
               </div>
 
-              <div className="self-end pt-1 lg:text-right">
+              <div className="premium-service-row__related self-end pt-1 lg:text-right">
                 <span className="readout readout-caps text-tide/70">
                   Related work
                 </span>
                 <p className="mt-1 text-sm font-medium text-seaglass">
                   {pillar.relatedWork}
                 </p>
+                <span
+                  aria-hidden
+                  className="mt-2 inline-block text-tide transition-transform duration-300 group-hover:translate-x-1.5 group-focus-visible:translate-x-1.5"
+                >
+                  →
+                </span>
               </div>
             </article>
           ))}

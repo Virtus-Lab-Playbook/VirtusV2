@@ -368,15 +368,28 @@ export function createVirtusCommandHub(
     let targetYaw = 0;
     let targetBiolume = 0;
     let targetBrass = 0;
+    let targetNodeIndex = -1;
 
     if (signalState) {
       const { activeSignal, activeSignalIndex } = signalState;
 
-      if (activeSignal === "service") {
+      if (activeSignal === "discipline") {
+        const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
+        targetNodeIndex = (idx * 2) % nodeGroups.length;
+        targetGimbal = (idx - 1.5) * 0.035;
+        targetYaw = (idx - 1.5) * 0.028;
+        targetBiolume = 0.18;
+      } else if (activeSignal === "service") {
         const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
         targetGimbal = (idx - 1.5) * 0.025;
         targetYaw = (idx - 1.5) * 0.018;
         targetBiolume = 0.12;
+      } else if (activeSignal === "why") {
+        const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
+        targetNodeIndex = (idx * 2 + 1) % nodeGroups.length;
+        targetGimbal = Math.sin((idx + 1) * 0.9) * 0.024;
+        targetYaw = (idx - 1.5) * 0.016;
+        targetBiolume = 0.1;
       } else if (activeSignal === "process") {
         const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
         targetGimbal = Math.sin(idx * 1.2) * 0.02;
@@ -430,7 +443,20 @@ export function createVirtusCommandHub(
     // 0.97 leaves a tiny 3% residual mechanical rotation so stabilization does
     // not feel mathematically sterile.
     for (let i = 0; i < nodeGroups.length; i++) {
-      nodeGroups[i].rotation.z = -outerVisual * 0.97;
+      const node = nodeGroups[i];
+
+      node.rotation.z = -outerVisual * 0.97;
+
+      const nodeTargetScale =
+        i === targetNodeIndex ? 1.18 : 1;
+
+      const nextScale = THREE.MathUtils.lerp(
+        node.scale.x,
+        nodeTargetScale,
+        1 - Math.exp(-6.5 * dt),
+      );
+
+      node.scale.setScalar(nextScale);
     }
 
     // -----------------------------------------------------------------------

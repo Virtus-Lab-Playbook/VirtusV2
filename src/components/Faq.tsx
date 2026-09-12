@@ -35,9 +35,13 @@ export function Faq() {
                 </span>
               </summary>
 
-              <p className="max-w-[66ch] pb-6 pl-[2.5rem] pr-8 text-[0.95rem] leading-relaxed text-tide sm:pl-[3.5rem]">
-                {item.a}
-              </p>
+              <div className="faq-answer-grid">
+                <div className="overflow-hidden">
+                  <p className="faq-answer-copy max-w-[66ch] pb-6 pl-[2.5rem] pr-8 text-[0.95rem] leading-relaxed text-tide sm:pl-[3.5rem]">
+                    {item.a}
+                  </p>
+                </div>
+              </div>
             </details>
           ))}
         </div>
