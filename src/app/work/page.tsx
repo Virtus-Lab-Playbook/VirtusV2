@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { site } from "@/content/site";
@@ -7,11 +6,15 @@ import {
   WorkRouteNav,
 } from "@/components/WorkRouteChrome";
 import { Container } from "@/components/primitives";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `Work — ${site.name}`,
-  description: site.work.intro,
-};
+export const metadata =
+  createPageMetadata({
+    title: "Work",
+    description:
+      site.work.intro,
+    path: "/work",
+  });
 
 export default function WorkIndexPage() {
   return (

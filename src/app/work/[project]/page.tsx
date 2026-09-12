@@ -8,6 +8,7 @@ import {
   WorkRouteNav,
 } from "@/components/WorkRouteChrome";
 import { Container } from "@/components/primitives";
+import { createPageMetadata } from "@/lib/seo";
 import {
   getNextWorkProject,
   getWorkProject,
@@ -35,15 +36,22 @@ export async function generateMetadata({
   const project = getWorkProject(projectId);
 
   if (!project) {
-    return {
-      title: `Work — ${site.name}`,
-    };
+    return createPageMetadata({
+      title: "Work",
+      description:
+        site.work.intro,
+      path: "/work",
+    });
   }
 
-  return {
-    title: `${project.name} — Work — ${site.name}`,
-    description: project.statement,
-  };
+  return createPageMetadata({
+    title:
+      `${project.name} — Work`,
+    description:
+      project.statement,
+    path:
+      `/work/${project.id}`,
+  });
 }
 
 export default async function ProjectPage({

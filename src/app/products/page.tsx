@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/content/site";
 import {
@@ -6,11 +5,16 @@ import {
   ProductRouteNav,
 } from "@/components/ProductRouteChrome";
 import { Container } from "@/components/primitives";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `Digital Products — ${site.name}`,
-  description: site.products.intro,
-};
+export const metadata =
+  createPageMetadata({
+    title:
+      "Digital Products",
+    description:
+      site.products.intro,
+    path: "/products",
+  });
 
 export default function ProductsPage() {
   return (

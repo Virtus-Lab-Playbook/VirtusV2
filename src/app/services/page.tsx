@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/content/site";
 import {
@@ -6,11 +5,15 @@ import {
   ServiceRouteNav,
 } from "@/components/ServiceRouteChrome";
 import { Container } from "@/components/primitives";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `Services — ${site.name}`,
-  description: site.services.intro,
-};
+export const metadata =
+  createPageMetadata({
+    title: "Services",
+    description:
+      site.services.intro,
+    path: "/services",
+  });
 
 export default function ServicesIndexPage() {
   return (

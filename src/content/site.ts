@@ -7,13 +7,20 @@ export const site = {
   name: "Virtus Lab",
   tagline: "Where brand, technology, and content move together.",
 
-  // Existing placeholder from the repository. Replace only when the real inbox is confirmed.
-  contactEmail: "hello@virtuslab.studio",
+  seo: {
+    description:
+      "Virtus Lab brings brand, web, content and automation under one coordinated digital studio.",
+    socialDescription:
+      "Brand, web, content and automation under one coordinated team.",
+  },
 
-  // Existing placeholders from the repository. Replace only when real legal pages are published.
+  // Populate only after the real public studio inbox is confirmed.
+  contactEmail: null as string | null,
+
+  // Populate only after real legal pages are published.
   legal: {
-    privacy: "#privacy",
-    terms: "#terms",
+    privacy: null as string | null,
+    terms: null as string | null,
   },
 
   availability: "Accepting new projects",

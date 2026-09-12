@@ -96,12 +96,14 @@ export function ProductRouteFooter() {
               </Link>
             </div>
 
-            <a
-              href={`mailto:${site.contactEmail}`}
-              className="text-sm font-medium text-abyss transition-opacity hover:opacity-65"
-            >
-              {site.contactEmail}
-            </a>
+            {site.contactEmail ? (
+              <a
+                href={`mailto:${site.contactEmail}`}
+                className="text-sm font-medium text-abyss transition-opacity hover:opacity-65"
+              >
+                {site.contactEmail}
+              </a>
+            ) : null}
           </div>
         </div>
 

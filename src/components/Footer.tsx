@@ -38,22 +38,45 @@ export function Footer() {
         </div>
 
         <div className="mt-12 grid gap-6 border-t border-shelf/55 pt-7 sm:grid-cols-[1fr_auto] sm:items-end">
-          <div className="flex flex-col gap-2 text-sm">
-            <a
-              href={`mailto:${site.contactEmail}`}
-              className="font-medium text-seaglass transition-colors hover:text-tide"
-            >
-              {site.contactEmail}
-            </a>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-tide">
-              <a href={site.legal.privacy} className="hover:text-seaglass">
-                Privacy
-              </a>
-              <a href={site.legal.terms} className="hover:text-seaglass">
-                Terms
-              </a>
+          {site.contactEmail ||
+          site.legal.privacy ||
+          site.legal.terms ? (
+            <div className="flex flex-col gap-2 text-sm">
+              {site.contactEmail ? (
+                <a
+                  href={`mailto:${site.contactEmail}`}
+                  className="font-medium text-seaglass transition-colors hover:text-tide"
+                >
+                  {site.contactEmail}
+                </a>
+              ) : null}
+
+              {site.legal.privacy ||
+              site.legal.terms ? (
+                <div className="flex flex-wrap gap-x-5 gap-y-2 text-tide">
+                  {site.legal.privacy ? (
+                    <a
+                      href={site.legal.privacy}
+                      className="hover:text-seaglass"
+                    >
+                      Privacy
+                    </a>
+                  ) : null}
+
+                  {site.legal.terms ? (
+                    <a
+                      href={site.legal.terms}
+                      className="hover:text-seaglass"
+                    >
+                      Terms
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
-          </div>
+          ) : (
+            <div aria-hidden />
+          )}
 
           <div className="sm:text-right">
             <p className="readout text-tide">{site.footer.built}</p>

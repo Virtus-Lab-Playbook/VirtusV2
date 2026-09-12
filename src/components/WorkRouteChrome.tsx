@@ -79,12 +79,14 @@ export function WorkRouteFooter() {
               </Link>
             </div>
 
-            <a
-              href={`mailto:${site.contactEmail}`}
-              className="text-sm font-medium text-seaglass transition-colors hover:text-tide"
-            >
-              {site.contactEmail}
-            </a>
+            {site.contactEmail ? (
+              <a
+                href={`mailto:${site.contactEmail}`}
+                className="text-sm font-medium text-seaglass transition-colors hover:text-tide"
+              >
+                {site.contactEmail}
+              </a>
+            ) : null}
           </div>
         </div>
 

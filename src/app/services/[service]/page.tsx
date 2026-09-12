@@ -8,6 +8,7 @@ import {
   ServiceRouteNav,
 } from "@/components/ServiceRouteChrome";
 import { Container } from "@/components/primitives";
+import { createPageMetadata } from "@/lib/seo";
 import {
   getNextService,
   getRelatedWork,
@@ -39,15 +40,22 @@ export async function generateMetadata({
     getServiceBySlug(serviceSlug);
 
   if (!service) {
-    return {
-      title: `Services — ${site.name}`,
-    };
+    return createPageMetadata({
+      title: "Services",
+      description:
+        site.services.intro,
+      path: "/services",
+    });
   }
 
-  return {
-    title: `${service.name} — Services — ${site.name}`,
-    description: service.outcome,
-  };
+  return createPageMetadata({
+    title:
+      `${service.name} — Services`,
+    description:
+      service.outcome,
+    path:
+      `/services/${service.slug}`,
+  });
 }
 
 export default async function ServicePage({
