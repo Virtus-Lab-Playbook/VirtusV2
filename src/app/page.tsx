@@ -46,15 +46,7 @@ export default function Home() {
           <DisciplineMarquee />
         </GlobalScrollScene>
 
-        <GlobalScrollScene
-          previousDepth={SECTION_DEPTHS.hero}
-          depth={SECTION_DEPTHS.work}
-          nextDepth={SECTION_DEPTHS.services}
-          mode="sticky-safe"
-          className="global-scroll-scene--work"
-        >
-          <Work />
-        </GlobalScrollScene>
+        <Work />
 
         <GlobalScrollScene
           previousDepth={SECTION_DEPTHS.work}

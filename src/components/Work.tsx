@@ -1,7 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { site } from "@/content/site";
 import { useExperience } from "@/experience/ExperienceContext";
 import { SECTION_DEPTHS } from "@/experience/experience-config";
@@ -11,113 +16,57 @@ const WORK_START_DEPTH = SECTION_DEPTHS.work;
 const WORK_NEXT_SECTION_DEPTH = SECTION_DEPTHS.services;
 
 /**
- * Desktop Work choreography:
+ * #34 Horizontal Parallax Gallery adaptation.
  *
- * #34 Horizontal Parallax Gallery
- * + #28 Slider Transitions
- * + subtle #26 image breathing
- * + soft #38-inspired magnetic dwell
+ * The reference uses a horizontally scrolling gallery whose items sit at
+ * different Z-depths, so some appear to travel slower and others faster.
  *
- * Every integer project position is a deliberate rest point.
- * Timing is scroll-distance based only.
+ * Virtus keeps native vertical page scrolling. Existing centralized depth
+ * drives one horizontal track; CSS perspective + per-card translateZ creates
+ * the differential parallax.
  */
-const OPENING_HOLD = 0.055;
-const FINAL_HOLD = 0.075;
-const SEGMENT_TRANSITION_START = 0.18;
-const SEGMENT_TRANSITION_END = 0.82;
+const WORK_DEPTH_SMOOTHING = 0.22;
+const MOTION_FINISH_FRACTION = 0.94;
 
-/**
- * Mostly raw depth keeps the stage attached to the user's wheel/trackpad.
- * The smaller smoothed contribution removes harsh wheel stepping without
- * creating a long catch-up after input stops.
- */
-const WORK_DEPTH_SMOOTHING = 0.35;
+const PARALLAX_LAYERS = [
+  { z: -120, scale: 1.12, y: "1.5vh" },
+  { z: 65, scale: 0.94, y: "-1.5vh" },
+  { z: -180, scale: 1.18, y: "2.2vh" },
+  { z: 90, scale: 0.91, y: "-1vh" },
+  { z: -80, scale: 1.08, y: "1.4vh" },
+] as const;
 
-/**
- * Finish the project sequence before physical sticky release so Project 05
- * receives a final dwell.
- */
-const MOTION_FINISH_FRACTION = 0.88;
+type WorkMetrics = {
+  travelDistance: number;
+  releaseDepth: number;
+};
 
-/**
- * Desktop layered-slider geometry.
- */
-const INCOMING_START_X = 94;
-const OUTGOING_END_X = -44;
+type WorkCardStyle = CSSProperties & {
+  "--work-z": string;
+  "--work-y": string;
+  "--work-scale": number;
+};
 
-/**
- * Image shell is 120% wide. 7.5% shell counter-motion gives about 9% of
- * card-width relative parallax, inside the locked 8–12% range.
- */
-const IMAGE_PARALLAX_PERCENT = 7.5;
+const initialMetrics: WorkMetrics = {
+  travelDistance: 0,
+  releaseDepth: WORK_NEXT_SECTION_DEPTH - 60,
+};
 
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-function smootherstep(value: number): number {
-  const t = clamp01(value);
-  return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
 function formatIndex(index: number): string {
   return String(index + 1).padStart(2, "0");
 }
 
-function getProjectPosition(
-  pinnedProgress: number,
-  projectCount: number,
-): number {
-  if (projectCount <= 1) return 0;
-
-  if (pinnedProgress <= OPENING_HOLD) {
-    return 0;
-  }
-
-  if (pinnedProgress >= 1 - FINAL_HOLD) {
-    return projectCount - 1;
-  }
-
-  const motionProgress = clamp01(
-    (pinnedProgress - OPENING_HOLD) /
-      (1 - OPENING_HOLD - FINAL_HOLD),
-  );
-
-  const transitionCount = projectCount - 1;
-  const scaled = motionProgress * transitionCount;
-
-  const segment = Math.min(
-    transitionCount - 1,
-    Math.floor(scaled),
-  );
-
-  const localProgress = scaled - segment;
-
-  const transitionProgress = clamp01(
-    (localProgress - SEGMENT_TRANSITION_START) /
-      (SEGMENT_TRANSITION_END - SEGMENT_TRANSITION_START),
-  );
-
-  return segment + smootherstep(transitionProgress);
-}
-
-type WorkMetrics = {
-  releaseDepth: number;
-};
-
-const initialMetrics: WorkMetrics = {
-  releaseDepth: WORK_NEXT_SECTION_DEPTH - 80,
-};
-
 export function Work() {
   const { rawDepth, smoothedDepth } = useExperience();
 
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   const [metrics, setMetrics] =
     useState<WorkMetrics>(initialMetrics);
@@ -125,10 +74,30 @@ export function Work() {
   useEffect(() => {
     const section = sectionRef.current;
     const sticky = stickyRef.current;
+    const viewport = viewportRef.current;
+    const track = trackRef.current;
 
-    if (!section || !sticky) return;
+    if (!section || !sticky || !viewport || !track) return;
 
     const measure = () => {
+      const cards = Array.from(
+        track.querySelectorAll<HTMLElement>("[data-work-card]"),
+      );
+
+      const lastCard = cards.at(-1);
+      const viewportWidth = Math.max(1, viewport.clientWidth);
+
+      /**
+       * End with the last project near the left side of the stage instead of
+       * merely making its right edge visible.
+       */
+      const nextTravelDistance = lastCard
+        ? Math.max(
+            0,
+            lastCard.offsetLeft - viewportWidth * 0.08,
+          )
+        : 0;
+
       const sectionHeight = Math.max(1, section.offsetHeight);
       const stickyHeight = Math.min(
         sectionHeight,
@@ -145,13 +114,22 @@ export function Work() {
           pinnedFraction;
 
       setMetrics((current) => {
-        if (
-          Math.abs(current.releaseDepth - nextReleaseDepth) <= 0.5
-        ) {
+        const travelChanged =
+          Math.abs(
+            current.travelDistance - nextTravelDistance,
+          ) > 0.5;
+
+        const releaseChanged =
+          Math.abs(
+            current.releaseDepth - nextReleaseDepth,
+          ) > 0.5;
+
+        if (!travelChanged && !releaseChanged) {
           return current;
         }
 
         return {
+          travelDistance: nextTravelDistance,
           releaseDepth: nextReleaseDepth,
         };
       });
@@ -164,6 +142,8 @@ export function Work() {
     const observer = new ResizeObserver(measure);
     observer.observe(section);
     observer.observe(sticky);
+    observer.observe(viewport);
+    observer.observe(track);
 
     return () => {
       observer.disconnect();
@@ -184,20 +164,19 @@ export function Work() {
     pinnedDepthSpan * MOTION_FINISH_FRACTION,
   );
 
-  const pinnedProgress = clamp01(
+  const progress = clamp01(
     (motionDepth - WORK_START_DEPTH) / motionDepthSpan,
   );
 
+  const trackX = metrics.travelDistance * progress;
+
   const projectCount = site.work.projects.length;
-
-  const projectPosition = getProjectPosition(
-    pinnedProgress,
-    projectCount,
-  );
-
   const activeIndex = Math.min(
     projectCount - 1,
-    Math.max(0, Math.round(projectPosition)),
+    Math.max(
+      0,
+      Math.round(progress * (projectCount - 1)),
+    ),
   );
 
   return (
@@ -250,52 +229,28 @@ export function Work() {
             </div>
           </header>
 
-          <div className="work-showcase__viewport mt-6 min-h-0 flex-1 sm:mt-7">
-            <div className="work-showcase__stage">
+          <div
+            ref={viewportRef}
+            className="work-showcase__viewport mt-6 min-h-0 flex-1 sm:mt-7"
+          >
+            <div
+              ref={trackRef}
+              className="work-showcase__track"
+              style={{
+                transform: `translate3d(${-trackX}px, 0, 0)`,
+              }}
+            >
               {site.work.projects.map((project, index) => {
-                const rawDelta = index - projectPosition;
-                const delta = clamp(rawDelta, -1, 1);
-                const distance = Math.min(1, Math.abs(rawDelta));
+                const layer =
+                  PARALLAX_LAYERS[
+                    index % PARALLAX_LAYERS.length
+                  ];
 
-                const isIncoming = delta >= 0;
-
-                const slideX = isIncoming
-                  ? delta * INCOMING_START_X
-                  : Math.abs(delta) * OUTGOING_END_X;
-
-                const slideOpacity =
-                  rawDelta > 1.05 || rawDelta < -1.05
-                    ? 0
-                    : isIncoming
-                      ? 0.72 + (1 - distance) * 0.28
-                      : Math.max(0.08, 1 - distance * 0.92);
-
-                const slideScale =
-                  isIncoming
-                    ? 0.985 + (1 - distance) * 0.015
-                    : 1 - distance * 0.018;
-
-                const zIndex =
-                  Math.abs(rawDelta) < 0.001
-                    ? 30
-                    : rawDelta > 0
-                      ? 20
-                      : 10;
-
-                const imageParallax =
-                  -delta * IMAGE_PARALLAX_PERCENT;
-
-                const imageScale =
-                  isIncoming
-                    ? 1 + distance * 0.035
-                    : 1 + distance * 0.025;
-
-                const metaOpacity =
-                  isIncoming
-                    ? 0.5 + (1 - distance) * 0.5
-                    : Math.max(0.24, 1 - distance * 0.76);
-
-                const metaY = delta * 10;
+                const cardStyle: WorkCardStyle = {
+                  "--work-z": `${layer.z}px`,
+                  "--work-y": layer.y,
+                  "--work-scale": layer.scale,
+                };
 
                 return (
                   <article
@@ -304,27 +259,16 @@ export function Work() {
                     data-experience-signal="work"
                     data-experience-index={index}
                     className="work-showcase__card"
-                    style={{
-                      opacity: slideOpacity,
-                      transform: `translate3d(${slideX}%, 0, 0) scale(${slideScale})`,
-                      zIndex,
-                    }}
+                    style={cardStyle}
                   >
                     <div className="work-showcase__media">
-                      <div
-                        className="work-showcase__image-shell"
-                        style={{
-                          transform: `translate3d(${imageParallax}%, 0, 0) scale(${imageScale})`,
-                        }}
-                      >
-                        <Image
-                          src={project.image}
-                          alt={project.imageAlt}
-                          fill
-                          sizes="(max-width: 767px) 86vw, (max-width: 1279px) 72vw, 58rem"
-                          className="object-cover"
-                        />
-                      </div>
+                      <Image
+                        src={project.image}
+                        alt={project.imageAlt}
+                        fill
+                        sizes="(max-width: 767px) 86vw, (max-width: 1279px) 58vw, 46rem"
+                        className="work-showcase__image object-cover"
+                      />
 
                       <div
                         aria-hidden
@@ -338,13 +282,7 @@ export function Work() {
                       </div>
                     </div>
 
-                    <div
-                      className="work-showcase__meta work-showcase__meta-motion mt-4 grid gap-4 border-t border-shelf/60 pt-4 sm:grid-cols-[1fr_auto] sm:items-start"
-                      style={{
-                        opacity: metaOpacity,
-                        transform: `translate3d(0, ${metaY}px, 0)`,
-                      }}
-                    >
+                    <div className="work-showcase__meta mt-4 grid gap-4 border-t border-shelf/60 pt-4 sm:grid-cols-[1fr_auto] sm:items-start">
                       <div>
                         <div className="mb-2 flex flex-wrap items-center gap-2.5">
                           <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-tide">
