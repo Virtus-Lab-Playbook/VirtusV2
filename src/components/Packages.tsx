@@ -22,8 +22,7 @@ export function Engagements() {
               data-reveal
               data-experience-signal="package"
               data-experience-index={index}
-              tabIndex={0}
-              className="premium-engagement group relative flex flex-col overflow-hidden border-b border-seaglass/25 py-8 outline-none last:border-b-0 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0"
+              className="premium-engagement group relative flex flex-col overflow-hidden border-b border-seaglass/25 py-8 last:border-b-0 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0"
             >
               <span
                 aria-hidden

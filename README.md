@@ -1,100 +1,303 @@
-# Virtus Lab — Home
+# Virtus Lab
 
-Deliverable **D13** (full website, Home page) from the Virtus Lab Platform Blueprint §5.4.
-Next.js 16 · TypeScript · Tailwind v4 · three.js + Babylon.js.
+Virtus Lab is an immersive digital-studio website built with Next.js, React, TypeScript, Tailwind CSS and Three.js.
 
-```bash
-npm run dev     # http://localhost:3000
-npm run build
-npx eslint src
+The active development branch is:
+
+```text
+website-redesign
 ```
 
-## Where things live
+## Stack
 
-| Path | What |
-|---|---|
-| `src/content/site.ts` | **All page copy.** Mirrors the Website Copy Deck (D14). Edit copy here, never in components. |
-| `src/app/globals.css` | Design tokens (`@theme`), base layer, the contour + rail load sequence. |
-| `src/app/layout.tsx` | Fonts (`next/font`), metadata, committed-dark `color-scheme`. |
-| `src/components/` | One file per section, plus `primitives.tsx` (Container, SectionHeader, GoldRule, Button). |
-| `src/components/DeepScene.tsx` | The hero's three.js volume — marine snow, caustics, cursor-tracking bioluminescence. Client, lazy-imports `three`. |
-| `src/components/BabScene.tsx` | The final CTA's Babylon.js "abyssal glow" — converging god-rays, gated caustics, a pointer-following ember. Client, lazy-imports `@babylonjs/core`. |
-| `src/components/DepthRail.tsx` | Fixed left gutter: scroll-linked depth readout, 0 m → 3,800 m. Client. |
-| `src/components/Contour.tsx` | Bathymetric divider — the page's structural device. |
-| `src/components/BriefBuilder.tsx` | The tap-through brief (see below). Client. |
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- Three.js
 
-## Color system
+No React Three Fiber, Drei, GSAP, Babylon.js or additional animation framework is used.
 
-Deep-sea revision of Blueprint §3.5, approved in place of the original navy.
-**Committed dark — "the deep."** No light mode; there is no daylight down here.
+## Local development
 
-Colors are **role tokens**, not literal names. Never hard-code a hex in a component —
-use the Tailwind utilities (`bg-abyss`, `bg-deep`, `text-tide`, `text-biolume`, …).
+```bash
+npm ci
+npm run dev
+```
 
-| Token | Hex | Role |
-|---|---|---|
-| `abyss` | `#04171E` | page ground |
-| `deep` | `#0B2E3A` | surface |
-| `shelf` | `#22505F` | borders, contour lines |
-| `tide` | `#A9BFC4` | muted text |
-| `seaglass` | `#F0F4F3` | primary text |
-| `biolume` | `#31E0BE` | cold glow accent — life; focus rings |
-| `brass` | `#C8A24A` | warm accent — instruments, the Gold Rule |
+Local URL:
 
-Every pairing clears WCAG AA. `biolume` and `brass` are used as fills or lines, never as
-body text on `abyss` (they pass as large text / UI only).
+```text
+http://localhost:3000
+```
 
-### Adding CSS
+Validation:
 
-Any global rule must go inside `@layer base`. Unlayered CSS beats Tailwind's
-layered utilities in the cascade — an unlayered `* { border-color }` silently
-cancels every `border-*` utility on the page. (The layered one in `globals.css` is fine.)
+```bash
+npm run build
+npx eslint src
+npx tsc --noEmit
+```
 
-## Typography
+## Main routes
 
-Blueprint §3.6's "engineered + classical" pairing, with Plex in place of Sora/Inter.
+```text
+/
+/work
+/work/[project]
 
-| Role | Face | Where |
-|---|---|---|
-| Display | **Fraunces** | h1, section headings, the final CTA, the footer tagline |
-| Body + UI | **IBM Plex Sans** | everything else |
-| Readouts | **IBM Plex Mono** (`.readout`) | depth scale, coordinates, chart annotations — data only, never as an eyebrow label |
+/services
+/services/[service]
 
-## The tap-through brief (replaces "Book a call")
+/products
 
-`BriefBuilder.tsx` is the page's one primary CTA. No form fields, no typing — the visitor
-taps chips across five short questions (need / stage / feel / timeline / budget). The summary
-panel builds live; **Send this brief** opens the visitor's mail client with the brief written
-out (`mailto:` to `site.contactEmail`), and **Copy brief** puts it on the clipboard.
+/api/brief
 
-Nothing is stored server-side yet — see the launch list.
+/robots.txt
+/sitemap.xml
+/opengraph-image
+```
 
-## Design decisions worth keeping
+The current Work detail pages are Lab Projects unless replaced with real approved client work.
 
-- **The descent** is the page's one signature: the fixed depth rail + bathymetric `Contour`
-  dividers. Spend boldness there and in the hero volume — everything else stays hairline-quiet.
-- **Three card treatments, deliberately different**: services are a hairline grid with no cards;
-  work cards are the only ones with a border + surface lift; packages are outlines marked by the
-  Gold Rule (brass top border; biolume on the featured tier).
-- **Numbers appear only in "How we work"**, because that is the only real sequence.
-- **Motion**: two WebGL moments — the hero's three.js volume and the final CTA's Babylon.js
-  glow. Both lazy-import their engine, pause offscreen, honour `prefers-reduced-motion`, and
-  fall back to a CSS gradient. Plus the scroll-linked depth rail, the hero's load stagger,
-  and micro-interactions (hover lifts, glowing chips). Nothing else animates.
-- **No testimonials section.** §5.9 forbids fake quotes; it ships when real permitted ones exist.
+## Source of truth
 
-## Before launch (Oct 26)
+Business-facing website copy belongs in:
 
-Search the codebase for `TODO` — each names its owning pod.
+```text
+src/content/site.ts
+```
 
-- [ ] **Agency Sub-Leader:** real "starting at" prices in `site.ts` (currently placeholders)
-- [ ] **Web Design Pod:** replace the three placeholder Lab Projects with actual pod work
-- [ ] **Web Dev Pod:** wire the brief builder to a real inbox / form store (§5.10) and confirm
-      `site.contactEmail` once the domain is secured (§5.2)
-- [ ] **Copy + QA Pods:** publish Privacy Policy and Terms, then link them in the footer (D16)
-- [ ] **Brand Pod:** swap the interim wordmark for the locked mark at L8, and add the favicon + OG image (both cut dark)
+Do not invent pricing, testimonials, customer counts, client results, availability, contact information, legal information or business statistics.
 
-## Compliance notes
+## Homepage
 
-- Concept work is labeled **Lab Project**; only permitted client work may be labeled **Case Study** (§1.9.4, §5.9).
-- No analytics, tracking pixels, or reporting tools are installed, per the blueprint's scope exclusion (§5.1).
+Current homepage order:
+
+```text
+Hero
+Trust / credibility
+Discipline marquee
+Selected Work
+Services
+Digital Products
+Why Virtus
+Process
+Engagement models
+Brief Builder
+FAQ
+Final CTA
+Footer
+```
+
+## Immersive architecture
+
+The website uses one global Three.js renderer.
+
+Scene owner:
+
+```text
+src/experience/ImmersiveExperience.tsx
+```
+
+Signature object:
+
+```text
+src/experience/objects/VirtusCommandHub.ts
+```
+
+Central scroll/depth controller:
+
+```text
+src/experience/ExperienceContext.tsx
+```
+
+Depth configuration:
+
+```text
+src/experience/experience-config.ts
+```
+
+Environment configuration:
+
+```text
+src/experience/environment/environment-config.ts
+```
+
+Do not add another global canvas, WebGLRenderer, independent Three.js RAF loop or independent 3D scroll listener.
+
+## Work experience
+
+The homepage Work section uses the #34-inspired horizontal perspective postcard gallery.
+
+Dedicated portfolio routes:
+
+```text
+/work
+/work/[project]
+```
+
+Project content is sourced from `src/content/site.ts`.
+
+Do not create fake live URLs, client results, metrics or testimonials.
+
+## Services
+
+Service routes:
+
+```text
+/services
+/services/brand
+/services/web
+/services/content
+/services/automation
+```
+
+Service content is sourced from `src/content/site.ts`.
+
+## Products
+
+The current product architecture is family-level only:
+
+```text
+/products
+```
+
+Current families:
+
+- Workflow Tools
+- AI Systems
+- Templates
+- Digital Resources
+
+There are no individual `/products/[product]` routes until real product records exist.
+
+## Brief submission
+
+The Brief Builder posts to:
+
+```text
+POST /api/brief
+```
+
+The API validates all submitted option values against `site.brief.steps` and sends the validated brief through the Resend HTTP API.
+
+Required server environment variables:
+
+```text
+RESEND_API_KEY
+VIRTUS_BRIEF_FROM_EMAIL
+VIRTUS_BRIEF_TO_EMAIL
+```
+
+Do not expose these values through `NEXT_PUBLIC_*`.
+
+The form also keeps Copy Brief as a client-side fallback.
+
+## SEO / launch environment
+
+Canonical production origin:
+
+```text
+VIRTUS_SITE_URL
+```
+
+Example format only:
+
+```text
+VIRTUS_SITE_URL="https://example.com"
+```
+
+Use the actual production origin.
+
+SEO files:
+
+```text
+src/lib/seo.ts
+src/app/robots.ts
+src/app/sitemap.ts
+src/app/opengraph-image.tsx
+src/components/StructuredData.tsx
+src/app/icon.svg
+```
+
+Preview/development deployments are intentionally noindex.
+
+## Public contact and legal links
+
+`site.contactEmail`, `site.legal.privacy` and `site.legal.terms` remain null until the owner supplies confirmed public values.
+
+The Packet 5 lead-delivery inbox must not automatically become the public contact email.
+
+## Design system
+
+Core palette:
+
+```text
+Cream       #E0E1DC
+Dusty Blue  #798DA8
+Steel Blue  #435A76
+Deep Slate  #1C2639
+Deep Sea    #0F1B2A
+```
+
+Fonts:
+
+```text
+Fraunces
+IBM Plex Sans
+IBM Plex Mono
+```
+
+Visual direction:
+
+```text
+deep ocean
+naval blueprint
+frosted steel
+editorial cream
+restrained motion
+```
+
+## Accessibility and motion
+
+Preserve:
+
+- semantic HTML
+- keyboard navigation
+- visible focus states
+- reduced-motion behavior
+- mobile/touch fallbacks
+- native FAQ semantics
+- accessible form labels and errors
+
+Informational containers must not be added to the tab order only for animation.
+
+## Before production launch
+
+Confirm externally supplied launch data:
+
+```text
+VIRTUS_SITE_URL
+RESEND_API_KEY
+VIRTUS_BRIEF_FROM_EMAIL
+VIRTUS_BRIEF_TO_EMAIL
+official public contact email, if one should be displayed
+official Privacy Policy URL/content
+official Terms URL/content
+official brand icon, if replacing the current temporary V favicon
+```
+
+Also confirm whether the current availability statement in `site.ts` is accurate before public launch.
+
+## Final release gate
+
+Run:
+
+```bash
+npm run build
+npx eslint src
+npx tsc --noEmit
+```
+
+Then complete the final manual responsive, accessibility, performance, SEO and form-delivery checks before merging `website-redesign`.

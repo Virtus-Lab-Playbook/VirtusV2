@@ -22,8 +22,7 @@ export function Process() {
               data-reveal
               data-experience-signal="process"
               data-experience-index={index}
-              tabIndex={0}
-              className="premium-process-row group relative grid grid-cols-[3.5rem_1fr] gap-5 border-b border-shelf/60 py-8 outline-none sm:grid-cols-[5rem_13rem_1fr] sm:gap-8 sm:py-9"
+              className="premium-process-row group relative grid grid-cols-[3.5rem_1fr] gap-5 border-b border-shelf/60 py-8 sm:grid-cols-[5rem_13rem_1fr] sm:gap-8 sm:py-9"
             >
               <span
                 aria-hidden

@@ -31,8 +31,7 @@ export function WhyUs() {
                 data-reveal
                 data-experience-signal="why"
                 data-experience-index={index}
-                tabIndex={0}
-                className="premium-why-row group relative grid grid-cols-[2.75rem_1fr] gap-4 border-b border-shelf/60 py-8 outline-none sm:grid-cols-[4rem_1fr] sm:gap-6 sm:py-9"
+                className="premium-why-row group relative grid grid-cols-[2.75rem_1fr] gap-4 border-b border-shelf/60 py-8 sm:grid-cols-[4rem_1fr] sm:gap-6 sm:py-9"
               >
                 <span
                   aria-hidden
