@@ -13,8 +13,10 @@ import { BriefBuilder } from "@/components/BriefBuilder";
 import { Faq } from "@/components/Faq";
 import { FinalCta } from "@/components/FinalCta";
 import { Footer } from "@/components/Footer";
+import { GlobalScrollScene } from "@/components/GlobalScrollScene";
 import { ImmersiveExperience } from "@/experience/ImmersiveExperience";
 import { ExperienceProvider } from "@/experience/ExperienceContext";
+import { SECTION_DEPTHS } from "@/experience/experience-config";
 
 export default function Home() {
   return (
@@ -32,18 +34,93 @@ export default function Home() {
       <Nav />
 
       <main id="main" tabIndex={-1} className="relative z-[1] outline-none">
-        <Hero />
-        <TrustStrip />
-        <DisciplineMarquee />
-        <Work />
-        <Services />
-        <DigitalProducts />
-        <WhyUs />
-        <Process />
-        <Engagements />
-        <BriefBuilder />
-        <Faq />
-        <FinalCta />
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.hero}
+          depth={SECTION_DEPTHS.hero}
+          nextDepth={SECTION_DEPTHS.work}
+          mode="slide"
+          className="global-scroll-scene--hero"
+        >
+          <Hero />
+          <TrustStrip />
+          <DisciplineMarquee />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.hero}
+          depth={SECTION_DEPTHS.work}
+          nextDepth={SECTION_DEPTHS.services}
+          mode="sticky-safe"
+          className="global-scroll-scene--work"
+        >
+          <Work />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.work}
+          depth={SECTION_DEPTHS.services}
+          nextDepth={SECTION_DEPTHS.products}
+        >
+          <Services />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.services}
+          depth={SECTION_DEPTHS.products}
+          nextDepth={SECTION_DEPTHS.whyUs}
+        >
+          <DigitalProducts />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.products}
+          depth={SECTION_DEPTHS.whyUs}
+          nextDepth={SECTION_DEPTHS.process}
+          mode="sticky-safe"
+        >
+          <WhyUs />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.whyUs}
+          depth={SECTION_DEPTHS.process}
+          nextDepth={SECTION_DEPTHS.engagements}
+        >
+          <Process />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.process}
+          depth={SECTION_DEPTHS.engagements}
+          nextDepth={SECTION_DEPTHS.brief}
+        >
+          <Engagements />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.engagements}
+          depth={SECTION_DEPTHS.brief}
+          nextDepth={SECTION_DEPTHS.faq}
+        >
+          <BriefBuilder />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.brief}
+          depth={SECTION_DEPTHS.faq}
+          nextDepth={SECTION_DEPTHS.finalCta}
+        >
+          <Faq />
+        </GlobalScrollScene>
+
+        <GlobalScrollScene
+          previousDepth={SECTION_DEPTHS.faq}
+          depth={SECTION_DEPTHS.finalCta}
+          nextDepth={SECTION_DEPTHS.footer}
+          mode="terminal"
+        >
+          <FinalCta />
+        </GlobalScrollScene>
       </main>
 
       <Footer />
