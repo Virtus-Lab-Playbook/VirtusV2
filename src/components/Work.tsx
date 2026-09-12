@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   useEffect,
   useRef,
@@ -18,16 +19,11 @@ const WORK_NEXT_SECTION_DEPTH = SECTION_DEPTHS.services;
 /**
  * Pure #34 postcard-wall gallery.
  *
- * Vertical document scroll drives one horizontal track.
- * Projects use different Z depths / Y offsets / dimensions so perspective
- * produces the reference's different apparent horizontal speeds.
+ * IMPORTANT:
+ * This packet changes project navigation only.
+ * The scroll / perspective mechanics remain the current implementation.
  */
 const WORK_DEPTH_SMOOTHING = 0.08;
-
-/**
- * 1.0 intentionally removes the old "finished gallery but still pinned" tail.
- * The horizontal travel now completes exactly as Work releases into Services.
- */
 const MOTION_FINISH_FRACTION = 1;
 
 const GALLERY_LAYOUTS = [
@@ -115,16 +111,17 @@ export function Work() {
 
     const measure = () => {
       const cards = Array.from(
-        track.querySelectorAll<HTMLElement>("[data-work-card]"),
+        track.querySelectorAll<HTMLElement>(
+          "[data-work-card]",
+        ),
       );
 
       const lastCard = cards.at(-1);
-      const viewportWidth = Math.max(1, viewport.clientWidth);
+      const viewportWidth = Math.max(
+        1,
+        viewport.clientWidth,
+      );
 
-      /**
-       * Keep P05 comfortably visible when Work releases.
-       * This prevents an empty dark tail at the Work -> Services handoff.
-       */
       const nextTravelDistance = lastCard
         ? Math.max(
             0,
@@ -134,7 +131,11 @@ export function Work() {
           )
         : 0;
 
-      const sectionHeight = Math.max(1, section.offsetHeight);
+      const sectionHeight = Math.max(
+        1,
+        section.offsetHeight,
+      );
+
       const stickyHeight = Math.min(
         sectionHeight,
         Math.max(1, sticky.offsetHeight),
@@ -152,10 +153,12 @@ export function Work() {
       setMetrics((current) => {
         const changed =
           Math.abs(
-            current.travelDistance - nextTravelDistance,
+            current.travelDistance -
+              nextTravelDistance,
           ) > 0.5 ||
           Math.abs(
-            current.releaseDepth - nextReleaseDepth,
+            current.releaseDepth -
+              nextReleaseDepth,
           ) > 0.5;
 
         if (!changed) return current;
@@ -190,7 +193,8 @@ export function Work() {
 
   const motionDepth =
     rawDepth +
-    (smoothedDepth - rawDepth) * WORK_DEPTH_SMOOTHING;
+    (smoothedDepth - rawDepth) *
+      WORK_DEPTH_SMOOTHING;
 
   const motionDepthSpan = Math.max(
     1,
@@ -198,17 +202,23 @@ export function Work() {
   );
 
   const progress = clamp01(
-    (motionDepth - WORK_START_DEPTH) / motionDepthSpan,
+    (motionDepth - WORK_START_DEPTH) /
+      motionDepthSpan,
   );
 
-  const trackX = metrics.travelDistance * progress;
+  const trackX =
+    metrics.travelDistance * progress;
 
-  const projectCount = site.work.projects.length;
+  const projectCount =
+    site.work.projects.length;
+
   const activeIndex = Math.min(
     projectCount - 1,
     Math.max(
       0,
-      Math.round(progress * (projectCount - 1)),
+      Math.round(
+        progress * (projectCount - 1),
+      ),
     ),
   );
 
@@ -219,7 +229,10 @@ export function Work() {
       aria-labelledby="work-title"
       className="work-showcase relative scroll-mt-24"
     >
-      <div ref={stickyRef} className="work-showcase__sticky">
+      <div
+        ref={stickyRef}
+        className="work-showcase__sticky"
+      >
         <Container className="work-showcase__header">
           <header
             data-reveal
@@ -244,21 +257,49 @@ export function Work() {
               <p className="mt-2 max-w-[66ch] text-[0.72rem] leading-relaxed text-tide/65">
                 {site.work.note}
               </p>
+
+              <Link
+                href="/work"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-tide transition-colors hover:text-seaglass md:hidden"
+              >
+                View all work
+                <span aria-hidden>→</span>
+              </Link>
             </div>
 
-            <div
-              className="hidden shrink-0 items-baseline gap-2 pb-1 md:flex"
-              aria-label={`Project ${activeIndex + 1} of ${projectCount}`}
-            >
-              <span className="font-mono text-2xl font-semibold tabular-nums text-seaglass">
-                {formatIndex(activeIndex)}
-              </span>
+            <div className="hidden shrink-0 flex-col items-end gap-3 pb-1 md:flex">
+              <div
+                className="flex items-baseline gap-2"
+                aria-label={`Project ${activeIndex + 1} of ${projectCount}`}
+              >
+                <span className="font-mono text-2xl font-semibold tabular-nums text-seaglass">
+                  {formatIndex(activeIndex)}
+                </span>
 
-              <span className="readout text-shelf">/</span>
+                <span className="readout text-shelf">
+                  /
+                </span>
 
-              <span className="readout tabular-nums text-tide">
-                {String(projectCount).padStart(2, "0")}
-              </span>
+                <span className="readout tabular-nums text-tide">
+                  {String(projectCount).padStart(
+                    2,
+                    "0",
+                  )}
+                </span>
+              </div>
+
+              <Link
+                href="/work"
+                className="group inline-flex items-center gap-2 text-sm font-semibold text-tide transition-colors hover:text-seaglass"
+              >
+                View all work
+                <span
+                  aria-hidden
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                >
+                  →
+                </span>
+              </Link>
             </div>
           </header>
         </Container>
@@ -274,104 +315,105 @@ export function Work() {
               transform: `translate3d(${-trackX}px, 0, 0)`,
             }}
           >
-            {site.work.projects.map((project, index) => {
-              const layout =
-                GALLERY_LAYOUTS[
-                  index % GALLERY_LAYOUTS.length
-                ];
+            {site.work.projects.map(
+              (project, index) => {
+                const layout =
+                  GALLERY_LAYOUTS[
+                    index %
+                      GALLERY_LAYOUTS.length
+                  ];
 
-              const cardStyle: WorkCardStyle = {
-                "--work-z": `${layout.z}px`,
-                "--work-y": layout.y,
-                "--work-scale": layout.scale,
-                "--work-width": layout.width,
-                "--work-aspect": layout.aspect,
-              };
+                const cardStyle: WorkCardStyle = {
+                  "--work-z": `${layout.z}px`,
+                  "--work-y": layout.y,
+                  "--work-scale": layout.scale,
+                  "--work-width": layout.width,
+                  "--work-aspect": layout.aspect,
+                };
 
-              const liveUrl = project.liveUrl;
-
-              const cardContents = (
-                <>
-                  <div className="work-showcase__media">
-                    <Image
-                      src={project.image}
-                      alt={project.imageAlt}
-                      fill
-                      sizes="(max-width: 767px) 82vw, (max-width: 1279px) 34vw, 32rem"
-                      className="work-showcase__image object-cover"
-                    />
-
-                    <div
-                      aria-hidden
-                      className="work-showcase__image-shade"
-                    />
-
-                    <div className="work-showcase__credit">
-                      <span className="readout text-[0.56rem] uppercase tracking-[0.12em] text-tide">
-                        {project.visualCredit}
-                      </span>
-                    </div>
-
-                    {liveUrl ? (
-                      <div className="work-showcase__visit">
-                        <span className="readout readout-caps text-seaglass">
-                          Visit live site ↗
-                        </span>
-                      </div>
-                    ) : null}
-
-                    <div className="work-showcase__title-overlay">
-                      <div className="flex items-center gap-2.5">
-                        <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-seaglass/78">
-                          {formatIndex(index)}
-                        </span>
-
-                        <span
-                          aria-hidden
-                          className="h-px w-4 bg-seaglass/45"
+                return (
+                  <article
+                    key={project.id}
+                    data-work-card
+                    data-experience-signal="work"
+                    data-experience-index={index}
+                    data-has-live-url={
+                      project.liveUrl
+                        ? "true"
+                        : "false"
+                    }
+                    className="work-showcase__card"
+                    style={cardStyle}
+                  >
+                    <Link
+                      href={`/work/${project.id}`}
+                      className="work-showcase__project-link"
+                      aria-label={`View ${project.name} case study`}
+                    >
+                      <div className="work-showcase__media">
+                        <Image
+                          src={project.image}
+                          alt={project.imageAlt}
+                          fill
+                          sizes="(max-width: 767px) 82vw, (max-width: 1279px) 34vw, 32rem"
+                          className="work-showcase__image object-cover"
                         />
 
-                        <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-seaglass/72">
-                          {project.pillar}
-                        </span>
+                        <div
+                          aria-hidden
+                          className="work-showcase__image-shade"
+                        />
+
+                        <div className="work-showcase__credit">
+                          <span className="readout text-[0.56rem] uppercase tracking-[0.12em] text-tide">
+                            {project.visualCredit}
+                          </span>
+                        </div>
+
+                        <div className="work-showcase__case-action">
+                          <span className="readout readout-caps text-seaglass">
+                            View case study →
+                          </span>
+                        </div>
+
+                        <div className="work-showcase__title-overlay">
+                          <div className="flex items-center gap-2.5">
+                            <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-seaglass/78">
+                              {formatIndex(index)}
+                            </span>
+
+                            <span
+                              aria-hidden
+                              className="h-px w-4 bg-seaglass/45"
+                            />
+
+                            <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-seaglass/72">
+                              {project.pillar}
+                            </span>
+                          </div>
+
+                          <h3 className="mt-1.5 font-display text-[clamp(1.2rem,1.7vw,1.75rem)] leading-none tracking-[-0.02em] text-seaglass">
+                            {project.name}
+                          </h3>
+                        </div>
                       </div>
+                    </Link>
 
-                      <h3 className="mt-1.5 font-display text-[clamp(1.2rem,1.7vw,1.75rem)] leading-none tracking-[-0.02em] text-seaglass">
-                        {project.name}
-                      </h3>
-                    </div>
-                  </div>
-                </>
-              );
-
-              return (
-                <article
-                  key={project.id}
-                  data-work-card
-                  data-experience-signal="work"
-                  data-experience-index={index}
-                  data-has-live-url={liveUrl ? "true" : "false"}
-                  className="work-showcase__card"
-                  style={cardStyle}
-                >
-                  {liveUrl ? (
-                    <a
-                      href={liveUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="work-showcase__project-link"
-                      aria-label={`Visit ${project.name} live site`}
-                    >
-                      {cardContents}
-                    </a>
-                  ) : (
-                    <div className="work-showcase__project-link">
-                      {cardContents}
-                    </div>
-                  )}
-                </article>
-              );
-            })}
+                    {project.liveUrl ? (
+                      <a
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="work-showcase__live-link"
+                        aria-label={`Visit ${project.name} live site`}
+                      >
+                        Live site ↗
+                      </a>
+                    ) : null}
+                  </article>
+                );
+              },
+            )}
           </div>
         </div>
       </div>
