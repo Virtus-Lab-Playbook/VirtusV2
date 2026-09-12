@@ -307,7 +307,7 @@
 /* -------------------------------------------------------------------------- */
 
 .work-showcase {
-  min-height: 420vh;
+  min-height: 350vh;
 }
 
 .work-showcase__sticky {
@@ -468,12 +468,25 @@
     transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.work-showcase__caption {
-  padding-top: 0.65rem;
-  transform: translateZ(1px);
+.work-showcase__title-overlay {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.8rem;
+  z-index: 5;
+  max-width: calc(100% - 7rem);
+  padding: 0.65rem 0.75rem;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-abyss) 88%, transparent),
+      color-mix(in oklab, var(--color-abyss) 58%, transparent)
+    );
+  border: 1px solid color-mix(in oklab, var(--color-seaglass) 12%, transparent);
+  backdrop-filter: blur(9px);
+  pointer-events: none;
   transition:
-    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 320ms ease;
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 320ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -509,9 +522,9 @@
     opacity: 0.08;
   }
 
-  .work-showcase__card:hover .work-showcase__caption,
-  .work-showcase__card:focus-within .work-showcase__caption {
-    transform: translate3d(0, 0.18rem, 1px);
+  .work-showcase__card:hover .work-showcase__title-overlay,
+  .work-showcase__card:focus-within .work-showcase__title-overlay {
+    transform: translate3d(0, -0.2rem, 0);
   }
 
   .work-showcase__card[data-has-live-url="true"]:hover

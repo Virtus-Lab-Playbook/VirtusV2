@@ -22,7 +22,7 @@ const WORK_NEXT_SECTION_DEPTH = SECTION_DEPTHS.services;
  * Projects use different Z depths / Y offsets / dimensions so perspective
  * produces the reference's different apparent horizontal speeds.
  */
-const WORK_DEPTH_SMOOTHING = 0.12;
+const WORK_DEPTH_SMOOTHING = 0.08;
 
 /**
  * 1.0 intentionally removes the old "finished gallery but still pinned" tail.
@@ -41,7 +41,7 @@ const GALLERY_LAYOUTS = [
   {
     z: 80,
     scale: 0.92,
-    y: "10vh",
+    y: "5vh",
     width: "clamp(16rem, 22vw, 22rem)",
     aspect: "4 / 5",
   },
@@ -55,7 +55,7 @@ const GALLERY_LAYOUTS = [
   {
     z: 110,
     scale: 0.88,
-    y: "13vh",
+    y: "6vh",
     width: "clamp(17rem, 24vw, 24rem)",
     aspect: "3 / 4",
   },
@@ -319,27 +319,27 @@ export function Work() {
                         </span>
                       </div>
                     ) : null}
-                  </div>
 
-                  <div className="work-showcase__caption">
-                    <div className="flex items-center gap-2.5">
-                      <span className="readout text-[0.62rem] uppercase tracking-[0.12em] text-tide">
-                        {formatIndex(index)}
-                      </span>
+                    <div className="work-showcase__title-overlay">
+                      <div className="flex items-center gap-2.5">
+                        <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-seaglass/78">
+                          {formatIndex(index)}
+                        </span>
 
-                      <span
-                        aria-hidden
-                        className="h-px w-4 bg-shelf"
-                      />
+                        <span
+                          aria-hidden
+                          className="h-px w-4 bg-seaglass/45"
+                        />
 
-                      <span className="readout text-[0.62rem] uppercase tracking-[0.12em] text-tide/80">
-                        {project.pillar}
-                      </span>
+                        <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-seaglass/72">
+                          {project.pillar}
+                        </span>
+                      </div>
+
+                      <h3 className="mt-1.5 font-display text-[clamp(1.2rem,1.7vw,1.75rem)] leading-none tracking-[-0.02em] text-seaglass">
+                        {project.name}
+                      </h3>
                     </div>
-
-                    <h3 className="mt-1.5 font-display text-[clamp(1.25rem,1.8vw,1.85rem)] leading-none tracking-[-0.02em] text-seaglass">
-                      {project.name}
-                    </h3>
                   </div>
                 </>
               );

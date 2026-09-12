@@ -92,7 +92,7 @@ export function BriefBuilder() {
   return (
     <section
       id="brief"
-      className="scroll-mt-24 border-y border-shelf/55 bg-abyss py-24 sm:py-32"
+      className="scroll-mt-24 border-y border-shelf/55 bg-abyss pt-14 pb-24 sm:pt-16 sm:pb-28"
     >
       <Container>
         <header data-reveal className="mb-14 max-w-[52rem]">

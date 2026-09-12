@@ -5,7 +5,7 @@ export function Engagements() {
   return (
     <section
       id="engagements"
-      className="scroll-mt-24 bg-shelf py-24 text-seaglass sm:py-32"
+      className="scroll-mt-24 bg-shelf pt-20 pb-12 text-seaglass sm:pt-24 sm:pb-14"
     >
       <Container>
         <SectionHeader
