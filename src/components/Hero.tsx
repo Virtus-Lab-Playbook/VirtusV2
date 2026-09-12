@@ -1,60 +1,82 @@
+"use client";
+
 import { site } from "@/content/site";
-import { Button } from "./primitives";
+import { useExperience } from "@/experience/ExperienceContext";
+import { SECTION_DEPTHS } from "@/experience/experience-config";
+import { Button, Container } from "./primitives";
+
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
 
 export function Hero() {
+  const { rawDepth, qualityConfig } = useExperience();
+
+  const departure = qualityConfig.isStatic
+    ? 0
+    : clamp01(rawDepth / Math.max(1, SECTION_DEPTHS.work * 0.72));
+
   return (
     <section
       id="top"
-      className="relative flex min-h-[92vh] sm:min-h-[96vh] items-center overflow-hidden pt-24 pb-20 sm:pt-32 sm:pb-28 lg:pt-16 lg:pb-16"
+      className="relative flex min-h-[100svh] items-center overflow-hidden pt-24 pb-20 sm:pt-28 sm:pb-24 lg:pt-20 lg:pb-20"
     >
-      {/* grading mantle — scene reads through, text stays strictly legible */}
-      <div className="absolute inset-0 bg-gradient-to-r from-abyss via-abyss/75 to-transparent sm:via-abyss/45" />
-      <div className="absolute inset-0 bg-gradient-to-t from-abyss via-transparent to-abyss/30" />
+      <div className="absolute inset-0 bg-gradient-to-r from-abyss via-abyss/86 to-transparent sm:via-abyss/64" />
+      <div className="absolute inset-0 bg-gradient-to-t from-abyss via-transparent to-abyss/40" />
 
-      <div className="relative z-10 mx-auto w-full max-w-[74rem] px-5 sm:px-8 lg:pl-[calc(var(--rail-w)+2rem)] lg:pr-10">
-        <div className="max-w-[46rem] lg:max-w-[44rem]">
-          <div className="hero-rise hero-rise-1 mb-7 flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-biolume/30 bg-biolume/10 px-3 py-1 text-[0.72rem] tracking-wider text-biolume uppercase font-medium backdrop-blur-md shadow-sm">
+      <Container className="relative z-10 flex min-h-[72svh] items-center">
+        <div
+          className="max-w-[48rem] lg:max-w-[44rem]"
+          style={{
+            opacity: 1 - departure * 0.12,
+            transform: `translate3d(0, ${departure * -12}px, 0)`,
+          }}
+        >
+          <div className="hero-rise hero-rise-1 mb-7 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className="readout readout-caps text-tide">
+              {site.hero.eyebrow}
+            </span>
+            <span aria-hidden className="hidden h-px w-8 bg-shelf sm:block" />
+            <span className="inline-flex items-center gap-2 text-[0.72rem] font-medium uppercase tracking-[0.12em] text-seaglass">
               <span
                 aria-hidden
-                className="h-1.5 w-1.5 rounded-full bg-biolume shadow-[0_0_8px_1px_var(--color-biolume)] animate-pulse"
+                className="h-1.5 w-1.5 rounded-full bg-tide"
               />
-              <span>{site.availability}</span>
-            </div>
-
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-shelf/80 bg-deep/60 px-3.5 py-1 backdrop-blur-md shadow-sm">
-              <span aria-hidden className="block h-px w-4 bg-brass" />
-              <span className="font-display text-xs sm:text-sm italic text-brass tracking-wide">
-                {site.tagline}
-              </span>
-            </div>
+              {site.availability}
+            </span>
           </div>
 
-          <h1 className="hero-rise hero-rise-2 text-display text-seaglass">
+          <h1 className="hero-rise hero-rise-2 max-w-[12ch] text-display text-seaglass">
             {site.hero.headline}
           </h1>
 
-          <p className="hero-rise hero-rise-3 mt-6 sm:mt-7 max-w-[46ch] text-base sm:text-lg leading-relaxed text-tide/90">
+          <p className="hero-rise hero-rise-3 mt-6 max-w-[50ch] text-base leading-relaxed text-tide sm:mt-7 sm:text-lg">
             {site.hero.body}
           </p>
 
-          <div className="hero-rise hero-rise-4 mt-9 sm:mt-10 flex flex-wrap items-center gap-3.5">
-            <Button href={site.hero.primary.href}>{site.hero.primary.label}</Button>
+          <div className="hero-rise hero-rise-4 mt-9 flex flex-wrap items-center gap-3.5 sm:mt-10">
+            <Button href={site.hero.primary.href}>
+              {site.hero.primary.label}
+            </Button>
             <Button href={site.hero.secondary.href} variant="secondary">
               {site.hero.secondary.label}
             </Button>
           </div>
-        </div>
-      </div>
 
-      {/* HUD — the sonar station telemetry placard */}
-      <div className="absolute bottom-6 right-6 hidden items-center gap-5 sm:flex rounded-full border border-shelf-dim/70 bg-abyss-2/75 px-4 py-1.5 backdrop-blur-sm">
-        <span className="readout text-tide/80">{site.hero.coords}</span>
-        <span className="flex items-center gap-1.5">
-          <span aria-hidden className="h-2 w-2 rounded-full bg-biolume shadow-[0_0_10px_2px_var(--color-biolume)] animate-pulse" />
-          <span className="readout-caps readout text-biolume text-[0.66rem]">live</span>
-        </span>
-      </div>
+          <div className="hero-rise hero-rise-4 mt-10 border-t border-shelf/55 pt-5">
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {site.hero.disciplines.map((discipline) => (
+                <span
+                  key={discipline}
+                  className="readout readout-caps text-tide/90"
+                >
+                  {discipline}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Container>
     </section>
   );
 }

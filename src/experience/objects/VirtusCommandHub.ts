@@ -123,7 +123,7 @@ export function createVirtusCommandHub(
   // ---------------------------------------------------------------------------
   const housingMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x0a242c,
+      color: 0x1c2639,
       metalness: 0.92,
       roughness: 0.27,
     }),
@@ -131,7 +131,7 @@ export function createVirtusCommandHub(
 
   const innerMetalMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x12333b,
+      color: 0x435a76,
       metalness: 0.86,
       roughness: 0.34,
     }),
@@ -139,7 +139,7 @@ export function createVirtusCommandHub(
 
   const supportMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x0d2b33,
+      color: 0x435a76,
       metalness: 0.8,
       roughness: 0.42,
     }),
@@ -147,8 +147,8 @@ export function createVirtusCommandHub(
 
   const brassMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0xc8a24a,
-      emissive: 0xc8a24a,
+      color: 0x798da8,
+      emissive: 0x798da8,
       emissiveIntensity: 0,
       metalness: 0.9,
       roughness: 0.26,
@@ -157,7 +157,7 @@ export function createVirtusCommandHub(
 
   const smokyCoreMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x04171e,
+      color: 0x0f1b2a,
       metalness: 0.58,
       roughness: 0.18,
       transparent: true,
@@ -167,8 +167,8 @@ export function createVirtusCommandHub(
 
   const biolumeMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x31e0be,
-      emissive: 0x31e0be,
+      color: 0xe0e1dc,
+      emissive: 0x798da8,
       emissiveIntensity: 0.62,
       transparent: true,
       opacity: 0.9,
@@ -442,8 +442,8 @@ export function createVirtusCommandHub(
 
     if (viewport.width < 640) {
       baseX = 0;
-      baseY = 0.35;
-      baseScale = 0.47;
+      baseY = -1.55;
+      baseScale = 0.43;
     } else if (viewport.width < 1024) {
       baseX = 0.75;
       baseY = 0.15;

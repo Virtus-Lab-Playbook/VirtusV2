@@ -4,81 +4,36 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { site } from "@/content/site";
 import { useExperience } from "@/experience/ExperienceContext";
-import { Container, GoldRule } from "./primitives";
+import { SECTION_DEPTHS } from "@/experience/experience-config";
+import { Container } from "./primitives";
 
-const WORK_START_DEPTH = 1600;
-const WORK_NEXT_SECTION_DEPTH = 2400;
+const WORK_START_DEPTH = SECTION_DEPTHS.work;
+const WORK_NEXT_SECTION_DEPTH = SECTION_DEPTHS.services;
 
-/**
- * Choreography:
- *
- * - small global opening hold so Project 01 is readable before movement begins
- * - each project has a local dwell before/after its transition
- * - small final hold so Project 05 settles before sticky release
- *
- * All timing is scroll-distance based, not time based.
- * Therefore:
- * - no delayed catch-up after scrolling stops
- * - reverse scroll naturally reverses the animation
- */
 const OPENING_HOLD = 0.045;
 const FINAL_HOLD = 0.06;
 const SEGMENT_TRANSITION_START = 0.1;
 const SEGMENT_TRANSITION_END = 0.9;
-
-/**
- * Horizontal work motion uses the existing global smoothed depth signal.
- *
- * 0 = completely raw / immediate
- * 1 = completely smoothed / floaty
- *
- * 0.68 keeps enough immediate response while removing mouse-wheel stepping.
- */
 const WORK_DEPTH_SMOOTHING = 0.68;
-
-/**
- * Finish horizontal choreography before the physical sticky release.
- *
- * This provides enough safety for the smoothed depth signal to catch up,
- * while preserving the final Project 05 dwell.
- */
 const MOTION_FINISH_FRACTION = 0.88;
 
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
-/**
- * Quintic smootherstep.
- *
- * Velocity and acceleration both approach zero at the beginning and end,
- * so project transitions feel less mechanical than cubic smoothstep.
- */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 function smootherstep(value: number): number {
   const t = clamp01(value);
-
-  return (
-    t *
-    t *
-    t *
-    (t * (t * 6 - 15) + 10)
-  );
+  return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
 function formatIndex(index: number): string {
   return String(index + 1).padStart(2, "0");
 }
 
-/**
- * Converts 0..1 pinned scroll progress into a continuous project position:
- *
- * 0.0 = Project 01 aligned
- * 1.0 = Project 02 aligned
- * 2.0 = Project 03 aligned
- * ...
- *
- * Each integer position is a deliberate visual resting point.
- */
 function getProjectPosition(
   pinnedProgress: number,
   projectCount: number,
@@ -100,12 +55,10 @@ function getProjectPosition(
 
   const transitionCount = projectCount - 1;
   const scaled = motionProgress * transitionCount;
-
   const segment = Math.min(
     transitionCount - 1,
     Math.floor(scaled),
   );
-
   const localProgress = scaled - segment;
 
   const transitionProgress = clamp01(
@@ -123,7 +76,7 @@ type WorkMetrics = {
 
 const initialMetrics: WorkMetrics = {
   cardOffsets: [],
-  releaseDepth: 2250,
+  releaseDepth: WORK_NEXT_SECTION_DEPTH - 80,
 };
 
 export function Work() {
@@ -160,14 +113,6 @@ export function Work() {
         Math.max(1, sticky.offsetHeight),
       );
 
-      /**
-       * sticky scroll distance:
-       *
-       * sectionHeight - stickyHeight
-       *
-       * Convert that real physical release position back into the same
-       * 1600 -> 2400 conceptual depth interval used by ExperienceContext.
-       */
       const pinnedFraction = clamp01(
         (sectionHeight - stickyHeight) / sectionHeight,
       );
@@ -220,21 +165,10 @@ export function Work() {
     metrics.releaseDepth - WORK_START_DEPTH,
   );
 
-  /**
-   * Keep the Work rail responsive to the real scroll position while borrowing
-   * inertia from the site's existing depth smoother.
-   *
-   * This is intentionally NOT another smooth-scroll system.
-   */
   const motionDepth =
     rawDepth +
     (smoothedDepth - rawDepth) * WORK_DEPTH_SMOOTHING;
 
-  /**
-   * Because smoothedDepth trails rawDepth slightly, complete the horizontal
-   * choreography before the physical sticky release. The remainder becomes
-   * the final Project 05 hold.
-   */
   const motionDepthSpan = Math.max(
     1,
     pinnedDepthSpan * MOTION_FINISH_FRACTION,
@@ -245,7 +179,6 @@ export function Work() {
   );
 
   const projectCount = site.work.projects.length;
-
   const projectPosition = getProjectPosition(
     pinnedProgress,
     projectCount,
@@ -255,17 +188,13 @@ export function Work() {
     projectCount - 1,
     Math.floor(projectPosition),
   );
-
   const upperIndex = Math.min(
     projectCount - 1,
     lowerIndex + 1,
   );
-
   const localCardProgress = projectPosition - lowerIndex;
 
-  const lowerOffset =
-    metrics.cardOffsets[lowerIndex] ?? 0;
-
+  const lowerOffset = metrics.cardOffsets[lowerIndex] ?? 0;
   const upperOffset =
     metrics.cardOffsets[upperIndex] ?? lowerOffset;
 
@@ -285,37 +214,30 @@ export function Work() {
       aria-labelledby="work-title"
       className="work-showcase relative scroll-mt-24"
     >
-      <div
-        ref={stickyRef}
-        className="work-showcase__sticky"
-      >
+      <div ref={stickyRef} className="work-showcase__sticky">
         <Container className="flex h-full min-h-0 flex-col pt-16 pb-6 sm:pt-20 sm:pb-8">
           <header
             data-reveal
             className="flex shrink-0 items-end justify-between gap-8"
           >
-            <div className="max-w-[48rem]">
-              <div className="mb-3 flex items-center gap-4">
-                <GoldRule />
-
-                <span className="readout inline-flex items-center gap-2 text-tide/90">
-                  <span
-                    aria-hidden
-                    className="h-1.5 w-1.5 rounded-full bg-biolume shadow-[0_0_8px_1px_var(--color-biolume)]"
-                  />
-                  1600 m — bathypelagic
-                </span>
-              </div>
+            <div className="max-w-[50rem]">
+              <span className="readout readout-caps text-tide">
+                Portfolio
+              </span>
 
               <h2
                 id="work-title"
-                className="font-display text-[clamp(2.7rem,5.4vw,5.4rem)] leading-[0.92] tracking-[-0.035em] text-seaglass"
+                className="mt-3 font-display text-[clamp(2.8rem,5.4vw,5.6rem)] leading-[0.92] tracking-[-0.035em] text-seaglass"
               >
                 {site.work.title}
               </h2>
 
-              <p className="mt-3 max-w-[58ch] text-sm leading-relaxed text-tide sm:text-base">
+              <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-tide sm:text-base">
                 {site.work.intro}
+              </p>
+
+              <p className="mt-2 max-w-[66ch] text-[0.72rem] leading-relaxed text-tide/65">
+                {site.work.note}
               </p>
             </div>
 
@@ -323,15 +245,13 @@ export function Work() {
               className="hidden shrink-0 items-baseline gap-2 pb-1 md:flex"
               aria-label={`Project ${activeIndex + 1} of ${projectCount}`}
             >
-              <span className="font-mono text-2xl font-semibold tabular-nums text-biolume">
+              <span className="font-mono text-2xl font-semibold tabular-nums text-seaglass">
                 {formatIndex(activeIndex)}
               </span>
 
-              <span className="readout text-tide/55">
-                /
-              </span>
+              <span className="readout text-shelf">/</span>
 
-              <span className="readout tabular-nums text-tide/75">
+              <span className="readout tabular-nums text-tide">
                 {String(projectCount).padStart(2, "0")}
               </span>
             </div>
@@ -348,71 +268,108 @@ export function Work() {
                 transform: `translate3d(${-translateX}px, 0, 0)`,
               }}
             >
-              {site.work.projects.map((project, index) => (
-                <article
-                  key={project.id}
-                  data-work-card
-                  data-experience-signal="work"
-                  data-experience-index={index}
-                  className="work-showcase__card group"
-                >
-                  <div className="work-showcase__media">
-                    <Image
-                      src={project.image}
-                      alt={project.imageAlt}
-                      fill
-                      sizes="(max-width: 767px) 86vw, (max-width: 1279px) 68vw, 52rem"
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.025]"
-                    />
+              {site.work.projects.map((project, index) => {
+                const relative = clamp(
+                  index - projectPosition,
+                  -1,
+                  1,
+                );
+                const distance = Math.min(
+                  1,
+                  Math.abs(index - projectPosition),
+                );
+                const imageShift = relative * 2.5;
+                const imageScale = 1 + distance * 0.035;
+                const metaOpacity = 1 - distance * 0.36;
+                const metaY = relative * 6;
 
-                    <div
-                      aria-hidden
-                      className="absolute inset-0 bg-gradient-to-t from-abyss/60 via-transparent to-transparent"
-                    />
+                return (
+                  <article
+                    key={project.id}
+                    data-work-card
+                    data-experience-signal="work"
+                    data-experience-index={index}
+                    className="work-showcase__card"
+                  >
+                    <div className="work-showcase__media">
+                      <Image
+                        src={project.image}
+                        alt={project.imageAlt}
+                        fill
+                        sizes="(max-width: 767px) 86vw, (max-width: 1279px) 72vw, 58rem"
+                        className="work-showcase__image object-cover"
+                        style={{
+                          transform: `translate3d(${imageShift}%, 0, 0) scale(${imageScale})`,
+                        }}
+                      />
 
-                    <div className="absolute bottom-3 right-3 rounded-full border border-seaglass/15 bg-abyss/75 px-2.5 py-1 backdrop-blur-sm">
-                      <span className="readout text-[0.6rem] uppercase tracking-[0.12em] text-tide/80">
-                        {project.visualCredit}
-                      </span>
-                    </div>
-                  </div>
+                      <div
+                        aria-hidden
+                        className="absolute inset-0 bg-gradient-to-t from-abyss/65 via-transparent to-transparent"
+                      />
 
-                  <div className="work-showcase__meta mt-4 grid gap-3 border-t border-shelf-dim/80 pt-3.5 sm:grid-cols-[1fr_auto] sm:items-start">
-                    <div>
-                      <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
-                        <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-biolume">
-                          {formatIndex(index)}
-                        </span>
-
-                        <span
-                          aria-hidden
-                          className="h-1 w-1 rounded-full bg-brass"
-                        />
-
-                        <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-tide/75">
-                          {project.kind}
+                      <div className="absolute bottom-3 right-3 bg-abyss/78 px-2.5 py-1 backdrop-blur-sm">
+                        <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-tide">
+                          {project.visualCredit}
                         </span>
                       </div>
-
-                      <h3 className="font-display text-[clamp(1.55rem,2.5vw,2.65rem)] leading-[0.98] tracking-[-0.025em] text-seaglass transition-colors duration-200 group-hover:text-biolume">
-                        {project.name}
-                      </h3>
-
-                      <p className="mt-1.5 text-sm font-medium text-brass/90">
-                        {project.pillar}
-                      </p>
-
-                      <p className="mt-2 max-w-[58ch] text-[0.84rem] leading-relaxed text-tide">
-                        {project.desc}
-                      </p>
                     </div>
 
-                    <span className="readout tabular-nums text-tide/65">
-                      {project.depth}
-                    </span>
-                  </div>
-                </article>
-              ))}
+                    <div
+                      className="work-showcase__meta work-showcase__meta-motion mt-4 grid gap-4 border-t border-shelf/60 pt-4 sm:grid-cols-[1fr_auto] sm:items-start"
+                      style={{
+                        opacity: metaOpacity,
+                        transform: `translate3d(0, ${metaY}px, 0)`,
+                      }}
+                    >
+                      <div>
+                        <div className="mb-2 flex flex-wrap items-center gap-2.5">
+                          <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-tide">
+                            {formatIndex(index)}
+                          </span>
+
+                          <span
+                            aria-hidden
+                            className="h-px w-4 bg-shelf"
+                          />
+
+                          <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-tide/80">
+                            {project.pillar}
+                          </span>
+
+                          <span className="readout text-[0.62rem] uppercase tracking-[0.12em] text-seaglass/65">
+                            {project.kind}
+                          </span>
+                        </div>
+
+                        <h3 className="font-display text-[clamp(1.65rem,2.7vw,2.8rem)] leading-[0.98] tracking-[-0.025em] text-seaglass">
+                          {project.name}
+                        </h3>
+
+                        <p className="mt-2 max-w-[56ch] text-[0.9rem] leading-relaxed text-tide">
+                          {project.statement}
+                        </p>
+
+                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+                          {project.capabilities.map((capability) => (
+                            <span
+                              key={capability}
+                              className="text-[0.75rem] font-medium text-seaglass/72"
+                            >
+                              {capability}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <span className="readout self-start text-tide/65">
+                        {formatIndex(index)} /{" "}
+                        {String(projectCount).padStart(2, "0")}
+                      </span>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </Container>

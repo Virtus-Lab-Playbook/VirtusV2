@@ -3,13 +3,13 @@ import { DepthRail } from "@/components/DepthRail";
 import { Hero } from "@/components/Hero";
 import { TrustStrip } from "@/components/TrustStrip";
 import { DisciplineMarquee } from "@/components/DisciplineMarquee";
-import { Contour } from "@/components/Contour";
-import { Services } from "@/components/Services";
-import { Process } from "@/components/Process";
 import { Work } from "@/components/Work";
+import { Services } from "@/components/Services";
+import { DigitalProducts } from "@/components/DigitalProducts";
 import { WhyUs } from "@/components/WhyUs";
+import { Process } from "@/components/Process";
+import { Engagements } from "@/components/Packages";
 import { BriefBuilder } from "@/components/BriefBuilder";
-import { Packages } from "@/components/Packages";
 import { Faq } from "@/components/Faq";
 import { FinalCta } from "@/components/FinalCta";
 import { Footer } from "@/components/Footer";
@@ -23,7 +23,7 @@ export default function Home() {
 
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-biolume focus:px-5 focus:py-2.5 focus:text-abyss focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-seaglass"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-seaglass focus:px-5 focus:py-2.5 focus:font-semibold focus:text-abyss focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-tide"
       >
         Skip to content
       </a>
@@ -35,14 +35,13 @@ export default function Home() {
         <Hero />
         <TrustStrip />
         <DisciplineMarquee />
-        <Contour animate />
-        <Services />
-        <Process />
         <Work />
+        <Services />
+        <DigitalProducts />
         <WhyUs />
-        <Contour />
+        <Process />
+        <Engagements />
         <BriefBuilder />
-        <Packages />
         <Faq />
         <FinalCta />
       </main>

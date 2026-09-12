@@ -22,53 +22,64 @@ function createWorkBeacons() {
   canvas.width = 32;
   canvas.height = 32;
   const ctx = canvas.getContext("2d");
+
   if (ctx) {
     const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    grad.addColorStop(0, "rgba(49, 224, 190, 1)");
-    grad.addColorStop(0.4, "rgba(49, 224, 190, 0.35)");
-    grad.addColorStop(1, "rgba(49, 224, 190, 0)");
+    grad.addColorStop(0, "rgba(121, 141, 168, 1)");
+    grad.addColorStop(0.4, "rgba(121, 141, 168, 0.30)");
+    grad.addColorStop(1, "rgba(121, 141, 168, 0)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 32, 32);
   }
+
   const texture = new THREE.CanvasTexture(canvas);
 
-  // 3 project beacons corresponding to Tidewater (0420m), Meridian (0980m), Harbor Freight (1600m)
   const positions = [
-    [-2.2, 0.35, -2.4],
-    [0.0, 0.65, -3.0],
-    [2.2, 0.15, -2.5],
-  ];
+    [-2.8, 0.25, -2.6],
+    [-1.4, 0.55, -3.0],
+    [0.0, 0.35, -3.2],
+    [1.4, 0.60, -3.0],
+    [2.8, 0.20, -2.6],
+  ] as const;
 
   const items = positions.map((pos) => {
     const mat = new THREE.SpriteMaterial({
       map: texture,
       transparent: true,
-      opacity: 0.06,
-      color: 0x31e0be,
+      opacity: 0.045,
+      color: 0x798da8,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
+
     const sprite = new THREE.Sprite(mat);
     sprite.position.set(pos[0], pos[1], pos[2]);
-    sprite.scale.set(0.35, 0.35, 1);
+    sprite.scale.set(0.32, 0.32, 1);
     group.add(sprite);
+
     return { sprite, mat };
   });
 
-  const update = (dt: number, smoothedDepth: number, signalState?: SignalState) => {
-    // Only visible in bathypelagic depth window (around 900m to 2500m)
+  const update = (
+    dt: number,
+    smoothedDepth: number,
+    signalState?: SignalState,
+  ) => {
     const depthVisibility =
-      THREE.MathUtils.smoothstep(smoothedDepth, 900, 1400) *
-      (1.0 - THREE.MathUtils.smoothstep(smoothedDepth, 2100, 2600));
+      THREE.MathUtils.smoothstep(smoothedDepth, 450, 650) *
+      (1.0 - THREE.MathUtils.smoothstep(smoothedDepth, 1600, 1900));
 
-    items.forEach(({ mat, sprite }, i) => {
+    items.forEach(({ mat, sprite }, index) => {
       const isActive =
         signalState?.activeSignal === "work" &&
-        signalState.activeSignalIndex === i;
-      const targetOpacity = (isActive ? 0.48 : 0.06) * depthVisibility;
-      const targetScale = isActive ? 0.48 : 0.35;
-      mat.opacity += (targetOpacity - mat.opacity) * Math.min(1, dt * 4.0);
-      sprite.scale.x += (targetScale - sprite.scale.x) * Math.min(1, dt * 4.0);
+        signalState.activeSignalIndex === index;
+
+      const targetOpacity = (isActive ? 0.34 : 0.045) * depthVisibility;
+      const targetScale = isActive ? 0.44 : 0.32;
+      const alpha = Math.min(1, dt * 4.0);
+
+      mat.opacity += (targetOpacity - mat.opacity) * alpha;
+      sprite.scale.x += (targetScale - sprite.scale.x) * alpha;
       sprite.scale.y = sprite.scale.x;
     });
   };
@@ -151,29 +162,24 @@ export function ImmersiveExperience() {
     const camera = new THREE.PerspectiveCamera(52, initW / initH, 0.1, 100);
     camera.position.set(0, 0, 7.5);
 
-    // --- 3. Lighting Rig (Oceanic & Restrained Edge Readability) ---
-    // Soft cool key light from front-top-right
-    const keyLight = new THREE.DirectionalLight(0xdcebf0, 0.95);
+    // Precision-blue lighting rig using only the approved Deep Sea palette.
+    const keyLight = new THREE.DirectionalLight(0xe0e1dc, 0.92);
     keyLight.position.set(3.5, 4.5, 5.0);
     scene.add(keyLight);
 
-    // Deep oceanic fill light from lower left
-    const fillLight = new THREE.DirectionalLight(0x0b2e3a, 0.50);
+    const fillLight = new THREE.DirectionalLight(0x1c2639, 0.52);
     fillLight.position.set(-4, -2, 3);
     scene.add(fillLight);
 
-    // Rear-right rim light: skims outer ring and trunnion thickness from behind
-    const rimLight = new THREE.DirectionalLight(0xa5d8e6, 0.70);
+    const rimLight = new THREE.DirectionalLight(0x798da8, 0.66);
     rimLight.position.set(4.5, 2.5, -3.0);
     scene.add(rimLight);
 
-    // Restrained warm brass accent reflection
-    const brassLight = new THREE.PointLight(0xc8a24a, 0.35, 12);
-    brassLight.position.set(-3.0, -2.5, 3.5);
-    scene.add(brassLight);
+    const accentLight = new THREE.PointLight(0x435a76, 0.28, 12);
+    accentLight.position.set(-3.0, -2.5, 3.5);
+    scene.add(accentLight);
 
-    // Low ambient to preserve deep contrast and shadow depth
-    const ambientLight = new THREE.AmbientLight(0x04171e, 0.28);
+    const ambientLight = new THREE.AmbientLight(0x0f1b2a, 0.30);
     scene.add(ambientLight);
 
     // --- 4. Signature Virtus Command Hub Object ---
@@ -295,7 +301,8 @@ export function ImmersiveExperience() {
       keyLight.intensity = 0.95 * env.topLight;
       fillLight.intensity = 0.50 * (1.0 - env.darknessMix * 0.3);
       rimLight.intensity = (0.60 + env.abyssRays * 0.40) * Math.max(0.2, env.coreVisibility);
-      brassLight.intensity = (0.25 + env.abyssEmber * 0.35) * env.coreVisibility;
+      accentLight.intensity =
+        (0.20 + env.abyssEmber * 0.25) * env.coreVisibility;
       ambientLight.intensity = 0.28 * (1.0 - env.darknessMix * 0.4);
 
       // Two-pass rendering on ONE WebGLRenderer
@@ -346,7 +353,7 @@ export function ImmersiveExperience() {
       keyLight.dispose();
       fillLight.dispose();
       rimLight.dispose();
-      brassLight.dispose();
+      accentLight.dispose();
       ambientLight.dispose();
       renderer.dispose();
     };

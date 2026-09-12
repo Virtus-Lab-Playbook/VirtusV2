@@ -27,11 +27,11 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: `${site.name} — ${site.tagline}`,
   description:
-    "Virtus Lab is a studio that designs brands, builds websites, and ships content and automation for growing businesses abroad. One coordinated team, quality-checked work.",
+    "Virtus Lab brings brand, web, content and automation under one coordinated digital studio.",
   openGraph: {
     title: `${site.name} — ${site.tagline}`,
     description:
-      "A studio, not a stack of freelancers. Brand, web, content, and automation from one coordinated team.",
+      "Brand, web, content and automation under one coordinated team.",
     type: "website",
   },
   robots: {
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#04171e",
+  themeColor: "#0F1B2A",
   colorScheme: "dark",
 };
 

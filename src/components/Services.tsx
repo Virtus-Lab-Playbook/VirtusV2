@@ -3,41 +3,83 @@ import { Container, SectionHeader } from "./primitives";
 
 export function Services() {
   return (
-    <section id="services" className="scroll-mt-24 pt-20 pb-28 sm:pt-28 sm:pb-36">
+    <section
+      id="services"
+      className="scroll-mt-24 bg-abyss-2/96 py-24 sm:py-32"
+    >
       <Container>
         <SectionHeader
           title={site.services.title}
           intro={site.services.intro}
-          depth="0210 m — continental shelf"
+          eyebrow="Capabilities"
           data-reveal
         />
-        {/* structured capability matrix */}
-        <div className="grid grid-cols-1 border-t border-shelf-dim/80 sm:grid-cols-2">
-          {site.services.pillars.map((p, idx) => (
-            <div
-              key={p.id}
+
+        <div className="border-t border-shelf/60">
+          {site.services.pillars.map((pillar, index) => (
+            <article
+              key={pillar.id}
+              data-reveal
               data-experience-signal="service"
-              data-experience-index={idx}
-              className="group relative border-b border-shelf-dim/80 py-9 transition-all duration-200 hover:bg-deep/30 sm:odd:border-r sm:odd:pr-12 sm:even:pl-12"
+              data-experience-index={index}
+              className="group grid gap-5 border-b border-shelf/60 py-9 transition-colors duration-200 hover:bg-shelf/10 sm:grid-cols-[4.5rem_13rem_1fr] sm:gap-8 sm:py-10 lg:grid-cols-[5rem_17rem_1fr_auto]"
             >
-              <span
-                aria-hidden
-                className="absolute left-0 top-0 h-px w-0 bg-biolume transition-all duration-400 group-hover:w-full"
-              />
-              <div className="mb-3 flex items-center justify-between">
-                <span className="readout text-biolume/80">P-0{idx + 1}</span>
-                <span className="readout text-tide/75 text-[0.68rem] tracking-wider">
-                  STUDIO PRACTICE
-                </span>
-              </div>
-              <h3 className="text-h3 font-sans font-semibold text-seaglass transition-colors duration-200 group-hover:text-biolume">
-                {p.name}
+              <span className="readout pt-1 text-tide">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+
+              <h3 className="font-sans text-xl font-semibold text-seaglass sm:text-2xl">
+                {pillar.name}
               </h3>
-              <p className="mt-3 max-w-[42ch] text-[0.95rem] leading-relaxed text-tide">
-                {p.desc}
-              </p>
-            </div>
+
+              <div>
+                <p className="max-w-[46ch] text-[1rem] leading-relaxed text-seaglass/92">
+                  {pillar.outcome}
+                </p>
+
+                <div className="mt-5 flex max-w-[48rem] flex-wrap gap-x-4 gap-y-2">
+                  {pillar.capabilities.map((capability) => (
+                    <span
+                      key={capability}
+                      className="text-[0.8rem] text-tide"
+                    >
+                      {capability}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="self-end pt-1 lg:text-right">
+                <span className="readout readout-caps text-tide/70">
+                  Related work
+                </span>
+                <p className="mt-1 text-sm font-medium text-seaglass">
+                  {pillar.relatedWork}
+                </p>
+              </div>
+            </article>
           ))}
+        </div>
+
+        <div
+          data-reveal
+          className="mt-9 flex flex-col gap-4 border-l border-tide pl-5 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="max-w-[55ch] text-base leading-relaxed text-seaglass">
+            {site.services.closing}
+          </p>
+          <a
+            href={site.nav.action.href}
+            className="group inline-flex items-center gap-2 text-sm font-semibold text-tide transition-colors hover:text-seaglass"
+          >
+            {site.nav.action.label}
+            <span
+              aria-hidden
+              className="transition-transform duration-200 group-hover:translate-x-1"
+            >
+              →
+            </span>
+          </a>
         </div>
       </Container>
     </section>
