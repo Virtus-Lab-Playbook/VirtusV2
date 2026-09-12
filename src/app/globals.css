@@ -1386,6 +1386,9 @@
 /* -------------------------------------------------------------------------- */
 
 .premium-product-family {
+  display: block;
+  color: inherit;
+  text-decoration: none;
   transition:
     background-color 320ms ease,
     border-color 320ms ease;
@@ -1404,6 +1407,7 @@
 
 .premium-product-family__title,
 .premium-product-family__number,
+.premium-product-family__explore,
 .premium-product-family__arrow {
   transition:
     transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -1439,10 +1443,190 @@
     transform: translateX(0.2rem);
   }
 
-  .premium-product-family:hover .premium-product-family__arrow,
-  .premium-product-family:focus-visible .premium-product-family__arrow {
+  .premium-product-family:hover
+    .premium-product-family__explore,
+  .premium-product-family:focus-visible
+    .premium-product-family__explore {
+    color: var(--color-abyss);
+  }
+
+  .premium-product-family:hover
+    .premium-product-family__arrow,
+  .premium-product-family:focus-visible
+    .premium-product-family__arrow {
     opacity: 1;
-    transform: translate3d(0.3rem, -0.15rem, 0);
+    transform: translateX(0.35rem);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Product Families Route                                                      */
+/* -------------------------------------------------------------------------- */
+
+.product-family-index {
+  text-decoration: none;
+}
+
+.product-family-section {
+  position: relative;
+}
+
+.product-family-section::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 0;
+  height: 1px;
+  background: var(--color-abyss);
+  transition:
+    width 620ms
+      cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-family-section:target::before {
+  width: 100%;
+}
+
+.product-family-section__number,
+.product-family-section__title {
+  transition:
+    transform 420ms
+      cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 320ms ease;
+}
+
+.product-family-feature {
+  transition:
+    background-color 260ms ease,
+    padding-left 360ms
+      cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-family-diagram {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  height: clamp(5rem, 8vw, 7rem);
+  border-top: 1px solid
+    color-mix(
+      in oklab,
+      var(--color-deep-2) 35%,
+      transparent
+    );
+  border-bottom: 1px solid
+    color-mix(
+      in oklab,
+      var(--color-deep-2) 35%,
+      transparent
+    );
+  overflow: hidden;
+}
+
+.product-family-diagram::before {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 1px;
+  background:
+    color-mix(
+      in oklab,
+      var(--color-deep-2) 24%,
+      transparent
+    );
+}
+
+.product-family-diagram > span {
+  position: relative;
+  border-right: 1px solid
+    color-mix(
+      in oklab,
+      var(--color-deep-2) 24%,
+      transparent
+    );
+}
+
+.product-family-diagram > span:last-child {
+  border-right: 0;
+}
+
+.product-family-diagram > span::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.42rem;
+  height: 0.42rem;
+  border: 1px solid
+    var(--color-deep-2);
+  border-radius: 999px;
+  background: var(--color-seaglass);
+  transform: translate(-50%, -50%);
+  transition:
+    transform 360ms
+      cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 280ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-family-section:hover
+    .product-family-section__number {
+    transform: translateY(-0.15rem);
+    opacity: 1;
+  }
+
+  .product-family-section:hover
+    .product-family-section__title {
+    transform: translateX(0.25rem);
+  }
+
+  .product-family-feature:hover {
+    background:
+      color-mix(
+        in oklab,
+        var(--color-abyss) 5%,
+        var(--color-seaglass)
+      );
+    padding-left: 1.45rem;
+  }
+
+  .product-family-section:hover
+    .product-family-diagram
+    > span::before {
+    transform:
+      translate(-50%, -50%)
+      scale(1.22);
+    background: var(--color-abyss);
+  }
+}
+
+@media (max-width: 767.98px) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .product-family-diagram {
+    height: 4.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .premium-product-family,
+  .premium-product-family *,
+  .product-family-section *,
+  .product-family-feature,
+  .product-family-diagram
+    > span::before {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .product-family-section:target::before {
+    width: 100%;
   }
 }
 
