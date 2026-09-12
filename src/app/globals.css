@@ -1785,3 +1785,140 @@ details[open] .faq-answer-copy {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Real Brief submission                                                       */
+/* -------------------------------------------------------------------------- */
+
+.brief-contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.brief-contact-field__label {
+  font-family: var(--font-plex-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-tide);
+}
+
+.brief-contact-field__control {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid
+    color-mix(
+      in oklab,
+      var(--color-shelf) 78%,
+      transparent
+    );
+  border-radius: 0;
+  background:
+    color-mix(
+      in oklab,
+      var(--color-abyss-2) 76%,
+      transparent
+    );
+  padding: 0.75rem 0.9rem;
+  color: var(--color-seaglass);
+  outline: none;
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.brief-contact-field__control::placeholder {
+  color:
+    color-mix(
+      in oklab,
+      var(--color-tide) 48%,
+      transparent
+    );
+}
+
+.brief-contact-field__control:hover {
+  border-color:
+    color-mix(
+      in oklab,
+      var(--color-tide) 72%,
+      var(--color-shelf)
+    );
+}
+
+.brief-contact-field__control:focus {
+  border-color:
+    var(--color-tide);
+  background:
+    color-mix(
+      in oklab,
+      var(--color-deep-2) 28%,
+      var(--color-abyss)
+    );
+  box-shadow:
+    0 0 0 3px
+      color-mix(
+        in oklab,
+        var(--color-tide) 10%,
+        transparent
+      );
+}
+
+.brief-contact-field__textarea {
+  min-height: 8.5rem;
+  resize: vertical;
+}
+
+.brief-honeypot {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+
+.brief-submit-state {
+  border-top: 1px solid
+    color-mix(
+      in oklab,
+      var(--color-shelf) 62%,
+      transparent
+    );
+  padding-top: 1rem;
+}
+
+.brief-submit-state--success {
+  border-left: 2px solid
+    var(--color-tide);
+  padding-left: 1rem;
+}
+
+.brief-submit-state__mark {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.8rem;
+  border: 1px solid
+    var(--color-tide);
+  border-radius: 999px;
+  color: var(--color-seaglass);
+  font-size: 0.75rem;
+}
+
+.brief-submit-error {
+  border-left: 2px solid
+    var(--color-tide);
+  padding-left: 0.75rem;
+  color: var(--color-seaglass);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brief-contact-field__control {
+    transition: none;
+  }
+}
+
+

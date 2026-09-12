@@ -402,7 +402,7 @@ export const site = {
     productEscape: {
       label: "Looking for something ready-made?",
       action: "View digital products",
-      href: "#products",
+      href: "/products",
     },
     steps: [
       {
@@ -468,15 +468,36 @@ export const site = {
         ],
       },
     ],
+    contact: {
+      title: "Where should we reply?",
+      intro:
+        "Add your details when the brief is ready. Name, email and at least one project need are required.",
+      name: "Name",
+      email: "Email",
+      company: "Company",
+      companyOptional: "Optional",
+      message: "Anything else we should know?",
+      messageOptional: "Optional",
+      submit: "Send project brief",
+      submitting: "Sending brief...",
+      successTitle: "Brief received.",
+      successBody:
+        "Your project brief was sent successfully. The email you provided will be used as the reply address.",
+      error:
+        "We could not send the brief right now. Your selections are still here, so you can try again or copy the brief.",
+      required:
+        "Add your name, email and at least one project need before sending.",
+      another: "Send another brief",
+    },
     summary: {
       title: "Your brief",
       empty: "Make a few choices and your brief builds itself here.",
-      send: "Send this brief",
+      send: "Send project brief",
       copy: "Copy brief",
       copied: "Copied",
       reset: "Start over",
       note:
-        "Sending opens your email app with the brief written out. Review or change anything before you send it.",
+        "Your brief is submitted directly from this page. Copy Brief remains available as a fallback.",
     },
   },
 
