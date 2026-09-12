@@ -394,10 +394,23 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const defaultExperienceFallback: ExperienceContextValue = {
+  motionStore: createExperienceMotionStore(initialDepthState),
+  qualityConfig: {
+    quality: "HIGH",
+    maxDpr: 2,
+    antialias: true,
+    isStatic: false,
+  },
+  signalState: initialSignalState,
+  triggerSignal: () => {},
+  resetSignal: () => {},
+};
+
 export function useExperience(): ExperienceContextValue {
   const context = useContext(ExperienceContext);
   if (!context) {
-    throw new Error("useExperience must be used within an <ExperienceProvider>");
+    return defaultExperienceFallback;
   }
   return context;
 }

@@ -1,85 +1,50 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { site } from "@/content/site";
-import { useExperience } from "@/experience/ExperienceContext";
-import { useExperienceMotion } from "@/experience/hooks/useExperienceMotion";
-import { SECTION_DEPTHS } from "@/experience/experience-config";
 import { Wordmark } from "./Wordmark";
-
-function getActiveHref(depth: number): string | null {
-  if (depth >= SECTION_DEPTHS.work && depth < SECTION_DEPTHS.services) {
-    return "#work";
-  }
-
-  if (depth >= SECTION_DEPTHS.services && depth < SECTION_DEPTHS.products) {
-    return "#services";
-  }
-
-  if (depth >= SECTION_DEPTHS.products && depth < SECTION_DEPTHS.whyUs) {
-    return "#products";
-  }
-
-  if (depth >= SECTION_DEPTHS.whyUs && depth < SECTION_DEPTHS.process) {
-    return "#why-us";
-  }
-
-  if (depth >= SECTION_DEPTHS.process && depth < SECTION_DEPTHS.engagements) {
-    return "#process";
-  }
-
-  return null;
-}
-
-type MotionNavState = {
-  lifted: boolean;
-  activeNavHref: string | null;
-  briefActive: boolean;
-};
 
 export function Nav() {
   const [open, setOpen] = useState(false);
-  const { resetSignal } = useExperience();
+  const [lifted, setLifted] = useState(false);
+  const [activeNavHref, setActiveNavHref] = useState<string | null>(null);
 
-  const [motionNav, setMotionNav] = useState<MotionNavState>({
-    lifted: false,
-    activeNavHref: null,
-    briefActive: false,
-  });
-
-  const motionNavRef = useRef(motionNav);
-
-  useExperienceMotion(({ rawDepth, smoothedDepth }) => {
-    const next: MotionNavState = {
-      lifted: rawDepth > 15,
-      activeNavHref: getActiveHref(smoothedDepth),
-      briefActive:
-        smoothedDepth >= SECTION_DEPTHS.brief &&
-        smoothedDepth < SECTION_DEPTHS.faq,
+  useEffect(() => {
+    const handleScroll = () => {
+      setLifted(window.scrollY > 20);
     };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    const current = motionNavRef.current;
+  useEffect(() => {
+    const sectionIds = ["work", "services", "products", "why-us", "process"];
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
 
-    if (
-      current.lifted === next.lifted &&
-      current.activeNavHref === next.activeNavHref &&
-      current.briefActive === next.briefActive
-    ) {
-      return;
-    }
+    if (elements.length === 0) return;
 
-    motionNavRef.current = next;
-    setMotionNav(next);
-  });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveNavHref(`#${entry.target.id}`);
+          }
+        });
+      },
+      { rootMargin: "-30% 0px -60% 0px", threshold: 0 },
+    );
 
-  const { lifted, activeNavHref, briefActive } = motionNav;
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
 
     if (open) {
-      resetSignal();
-
       const onKeyDown = (event: KeyboardEvent) => {
         if (event.key === "Escape") setOpen(false);
       };
@@ -95,7 +60,7 @@ export function Nav() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open, resetSignal]);
+  }, [open]);
 
   return (
     <header
@@ -105,7 +70,7 @@ export function Nav() {
           : "border-b border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex max-w-[74rem] items-center justify-between px-5 py-3.5 sm:px-8 lg:pl-[calc(var(--rail-w)+2rem)] lg:pr-10">
+      <div className="mx-auto flex max-w-[74rem] items-center justify-between px-5 py-3.5 sm:px-8 lg:px-10">
         <a
           href="#top"
           className="shrink-0 transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tide"
@@ -136,11 +101,7 @@ export function Nav() {
 
           <a
             href={site.nav.action.href}
-            className={`inline-flex min-h-10 items-center justify-center rounded-full px-5 py-2 text-sm font-semibold tracking-tight transition-all duration-300 active:scale-[0.98] ${
-              briefActive
-                ? "bg-tide text-abyss shadow-[0_0_0_4px_rgba(121,141,168,0.12)]"
-                : "bg-seaglass text-abyss hover:bg-tide"
-            }`}
+            className="inline-flex min-h-10 items-center justify-center rounded-full bg-seaglass px-5 py-2 text-sm font-semibold tracking-tight text-abyss transition-all duration-300 hover:bg-tide active:scale-[0.98]"
           >
             {site.nav.action.label}
           </a>
@@ -205,11 +166,7 @@ export function Nav() {
             <a
               href={site.nav.action.href}
               onClick={() => setOpen(false)}
-              className={`mt-5 inline-flex min-h-12 items-center justify-center rounded-full px-5 py-3 text-sm font-semibold tracking-tight text-abyss transition-colors ${
-                briefActive
-                  ? "bg-tide"
-                  : "bg-seaglass hover:bg-tide"
-              }`}
+              className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-seaglass px-5 py-3 text-sm font-semibold tracking-tight text-abyss transition-colors hover:bg-tide"
             >
               {site.nav.action.label}
             </a>

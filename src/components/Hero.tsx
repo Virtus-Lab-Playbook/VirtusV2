@@ -1,33 +1,8 @@
-"use client";
-
 import Link from "next/link";
-import { useRef } from "react";
 import { site } from "@/content/site";
-import { useExperience } from "@/experience/ExperienceContext";
-import { useExperienceMotion } from "@/experience/hooks/useExperienceMotion";
-import { SECTION_DEPTHS } from "@/experience/experience-config";
 import { Button, Container } from "./primitives";
 
-function clamp01(value: number): number {
-  return Math.min(1, Math.max(0, value));
-}
-
 export function Hero() {
-  const { qualityConfig } = useExperience();
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useExperienceMotion(({ rawDepth }) => {
-    const element = contentRef.current;
-    if (!element) return;
-
-    const departure = qualityConfig.isStatic
-      ? 0
-      : clamp01(rawDepth / Math.max(1, SECTION_DEPTHS.work * 0.72));
-
-    element.style.opacity = String(1 - departure * 0.12);
-    element.style.transform = `translate3d(0, ${departure * -12}px, 0)`;
-  });
-
   return (
     <section
       id="top"
@@ -37,10 +12,7 @@ export function Hero() {
       <div className="absolute inset-0 bg-gradient-to-t from-abyss via-transparent to-abyss/40" />
 
       <Container className="relative z-10 flex min-h-[72svh] items-center">
-        <div
-          ref={contentRef}
-          className="max-w-[48rem] lg:max-w-[44rem]"
-        >
+        <div className="max-w-[48rem] lg:max-w-[44rem]">
           <div className="hero-rise hero-rise-1 mb-7 flex flex-wrap items-center gap-x-4 gap-y-2">
             <span className="readout readout-caps text-tide">
               {site.hero.eyebrow}
@@ -81,8 +53,6 @@ export function Hero() {
                   <Link
                     key={discipline}
                     href={`/services/${service.slug}`}
-                    data-experience-signal="discipline"
-                    data-experience-index={index}
                     aria-label={`Explore ${discipline}`}
                     className="hero-discipline readout readout-caps rounded-full border border-transparent px-3 py-2 text-tide/88 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tide"
                   >

@@ -21,8 +21,6 @@ export function Engagements() {
             <article
               key={model.name}
               data-reveal
-              data-experience-signal="package"
-              data-experience-index={index}
               className="premium-engagement group relative flex flex-col overflow-hidden border-b border-seaglass/25 py-8 last:border-b-0 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0"
             >
               <span

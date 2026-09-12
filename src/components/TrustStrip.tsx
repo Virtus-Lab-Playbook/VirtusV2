@@ -6,7 +6,7 @@ export function TrustStrip() {
       aria-label="Studio credibility"
       className="border-y border-shelf/55 bg-abyss-2/96"
     >
-      <div className="mx-auto grid max-w-[74rem] grid-cols-1 divide-y divide-shelf/50 px-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-8 lg:pl-[calc(var(--rail-w)+2rem)] lg:pr-10">
+      <div className="mx-auto grid max-w-[74rem] grid-cols-1 divide-y divide-shelf/50 px-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-8 lg:px-10">
         {site.trust.items.map((item, index) => (
           <div
             key={item.title}

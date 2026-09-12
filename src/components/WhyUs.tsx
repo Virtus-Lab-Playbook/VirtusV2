@@ -29,8 +29,6 @@ export function WhyUs() {
               <article
                 key={point.name}
                 data-reveal
-                data-experience-signal="why"
-                data-experience-index={index}
                 className="premium-why-row group relative grid grid-cols-[2.75rem_1fr] gap-4 border-b border-shelf/60 py-8 sm:grid-cols-[4rem_1fr] sm:gap-6 sm:py-9"
               >
                 <span

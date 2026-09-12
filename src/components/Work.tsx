@@ -428,8 +428,6 @@ export function Work() {
                   <article
                     key={project.id}
                     data-work-card
-                    data-experience-signal="work"
-                    data-experience-index={index}
                     data-has-live-url={
                       project.liveUrl
                         ? "true"
