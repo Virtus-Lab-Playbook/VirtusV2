@@ -303,11 +303,11 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Selected Work — true #34 postcard-wall perspective parallax gallery         */
+/* Selected Work — #34 postcard-wall, faster / image-first / no lower strip     */
 /* -------------------------------------------------------------------------- */
 
 .work-showcase {
-  min-height: 500vh;
+  min-height: 420vh;
 }
 
 .work-showcase__sticky {
@@ -334,7 +334,7 @@
 
 .work-showcase__header {
   flex: 0 0 auto;
-  padding-top: clamp(4.5rem, 7vh, 6.25rem);
+  padding-top: clamp(3.75rem, 5.5vh, 5rem);
 }
 
 .work-showcase__viewport {
@@ -373,6 +373,28 @@
   backface-visibility: hidden;
 }
 
+.work-showcase__project-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
+.work-showcase__card[data-has-live-url="false"]
+  .work-showcase__project-link {
+  cursor: zoom-in;
+}
+
+.work-showcase__card[data-has-live-url="true"]
+  .work-showcase__project-link {
+  cursor: pointer;
+}
+
+.work-showcase__project-link:focus-visible {
+  outline: 2px solid var(--color-tide);
+  outline-offset: 7px;
+}
+
 .work-showcase__media {
   position: relative;
   width: 100%;
@@ -385,9 +407,9 @@
     0 18px 42px color-mix(in oklab, var(--color-abyss) 68%, transparent),
     0 0 0 1px color-mix(in oklab, var(--color-shelf) 52%, transparent);
   transition:
-    transform 560ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 420ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 560ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 500ms cubic-bezier(0.16, 1, 0.3, 1);
   transform-style: preserve-3d;
   will-change: transform;
 }
@@ -401,8 +423,8 @@
     contrast(1.05);
   transform: scale(1.01);
   transition:
-    filter 480ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 680ms cubic-bezier(0.16, 1, 0.3, 1);
+    filter 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: filter, transform;
 }
 
@@ -416,7 +438,7 @@
       transparent 42%
     );
   pointer-events: none;
-  transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .work-showcase__credit {
@@ -426,26 +448,44 @@
   padding: 0.28rem 0.48rem;
   background: color-mix(in oklab, var(--color-abyss) 82%, transparent);
   backdrop-filter: blur(7px);
+  pointer-events: none;
+}
+
+.work-showcase__visit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  opacity: 0;
+  transform: translate(-50%, -40%);
+  padding: 0.65rem 0.85rem;
+  border: 1px solid color-mix(in oklab, var(--color-seaglass) 62%, transparent);
+  background: color-mix(in oklab, var(--color-abyss) 78%, transparent);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  transition:
+    opacity 260ms ease,
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .work-showcase__caption {
-  padding-top: 0.7rem;
+  padding-top: 0.65rem;
   transform: translateZ(1px);
-}
-
-.work-showcase__detail {
-  flex: 0 0 auto;
-  padding-bottom: clamp(1.1rem, 2vh, 1.6rem);
+  transition:
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 320ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .work-showcase__card:hover {
+  .work-showcase__card:hover,
+  .work-showcase__card:focus-within {
     z-index: 50;
   }
 
-  .work-showcase__card:hover .work-showcase__media {
+  .work-showcase__card:hover .work-showcase__media,
+  .work-showcase__card:focus-within .work-showcase__media {
     transform:
-      translate3d(0, -0.45rem, 95px)
+      translate3d(0, -0.55rem, 105px)
       scale(1.13);
     border-color: var(--color-seaglass);
     box-shadow:
@@ -453,22 +493,33 @@
       0 0 0 1px color-mix(in oklab, var(--color-tide) 28%, transparent);
   }
 
-  .work-showcase__card:hover .work-showcase__image {
+  .work-showcase__card:hover .work-showcase__image,
+  .work-showcase__card:focus-within .work-showcase__image {
     filter:
       grayscale(0)
       saturate(1)
       sepia(0)
       brightness(1)
       contrast(1);
-    transform: scale(1.045);
+    transform: scale(1.05);
   }
 
-  .work-showcase__card:hover .work-showcase__image-shade {
-    opacity: 0.12;
+  .work-showcase__card:hover .work-showcase__image-shade,
+  .work-showcase__card:focus-within .work-showcase__image-shade {
+    opacity: 0.08;
   }
 
-  .work-showcase__card:hover .work-showcase__caption h3 {
-    color: var(--color-seaglass);
+  .work-showcase__card:hover .work-showcase__caption,
+  .work-showcase__card:focus-within .work-showcase__caption {
+    transform: translate3d(0, 0.18rem, 1px);
+  }
+
+  .work-showcase__card[data-has-live-url="true"]:hover
+    .work-showcase__visit,
+  .work-showcase__card[data-has-live-url="true"]:focus-within
+    .work-showcase__visit {
+    opacity: 1;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -542,7 +593,7 @@
     opacity: 0.18;
   }
 
-  .work-showcase__detail {
+  .work-showcase__visit {
     display: none;
   }
 }
@@ -649,8 +700,6 @@
   .work-showcase__media {
     aspect-ratio: 4 / 3;
     transform: none !important;
-    box-shadow:
-      0 16px 34px color-mix(in oklab, var(--color-abyss) 56%, transparent);
     transition: none;
     will-change: auto;
   }
@@ -666,7 +715,7 @@
     opacity: 0.18;
   }
 
-  .work-showcase__detail {
+  .work-showcase__visit {
     display: none;
   }
 

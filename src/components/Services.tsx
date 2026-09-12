@@ -5,7 +5,7 @@ export function Services() {
   return (
     <section
       id="services"
-      className="scroll-mt-24 bg-abyss-2/96 py-24 sm:py-32"
+      className="scroll-mt-24 bg-abyss-2/96 pt-16 pb-24 sm:pt-20 sm:pb-32"
     >
       <Container>
         <SectionHeader

@@ -16,15 +16,19 @@ const WORK_START_DEPTH = SECTION_DEPTHS.work;
 const WORK_NEXT_SECTION_DEPTH = SECTION_DEPTHS.services;
 
 /**
- * Pure #34 adaptation:
- * one continuous horizontal gallery under perspective.
+ * Pure #34 postcard-wall gallery.
  *
- * The whole track moves once.
- * Individual projects sit at different Z depths, sizes and Y offsets, so their
- * apparent horizontal speed differs under perspective.
+ * Vertical document scroll drives one horizontal track.
+ * Projects use different Z depths / Y offsets / dimensions so perspective
+ * produces the reference's different apparent horizontal speeds.
  */
-const WORK_DEPTH_SMOOTHING = 0.18;
-const MOTION_FINISH_FRACTION = 0.96;
+const WORK_DEPTH_SMOOTHING = 0.12;
+
+/**
+ * 1.0 intentionally removes the old "finished gallery but still pinned" tail.
+ * The horizontal travel now completes exactly as Work releases into Services.
+ */
+const MOTION_FINISH_FRACTION = 1;
 
 const GALLERY_LAYOUTS = [
   {
@@ -67,8 +71,6 @@ const GALLERY_LAYOUTS = [
 type WorkMetrics = {
   travelDistance: number;
   releaseDepth: number;
-  viewportWidth: number;
-  cardCenters: number[];
 };
 
 type WorkCardStyle = CSSProperties & {
@@ -82,8 +84,6 @@ type WorkCardStyle = CSSProperties & {
 const initialMetrics: WorkMetrics = {
   travelDistance: 0,
   releaseDepth: WORK_NEXT_SECTION_DEPTH - 60,
-  viewportWidth: 0,
-  cardCenters: [],
 };
 
 function clamp01(value: number): number {
@@ -92,27 +92,6 @@ function clamp01(value: number): number {
 
 function formatIndex(index: number): string {
   return String(index + 1).padStart(2, "0");
-}
-
-function getNearestProjectIndex(
-  centers: number[],
-  focusX: number,
-): number {
-  if (centers.length === 0) return 0;
-
-  let bestIndex = 0;
-  let bestDistance = Number.POSITIVE_INFINITY;
-
-  centers.forEach((center, index) => {
-    const distance = Math.abs(center - focusX);
-
-    if (distance < bestDistance) {
-      bestIndex = index;
-      bestDistance = distance;
-    }
-  });
-
-  return bestIndex;
 }
 
 export function Work() {
@@ -139,24 +118,19 @@ export function Work() {
         track.querySelectorAll<HTMLElement>("[data-work-card]"),
       );
 
+      const lastCard = cards.at(-1);
       const viewportWidth = Math.max(1, viewport.clientWidth);
 
-      const cardCenters = cards.map(
-        (card) => card.offsetLeft + card.offsetWidth / 2,
-      );
-
-      const lastCard = cards.at(-1);
-
       /**
-       * Finish with the last postcard still inside the composition rather than
-       * driving it all the way to the far left edge.
+       * Keep P05 comfortably visible when Work releases.
+       * This prevents an empty dark tail at the Work -> Services handoff.
        */
       const nextTravelDistance = lastCard
         ? Math.max(
             0,
             lastCard.offsetLeft +
               lastCard.offsetWidth / 2 -
-              viewportWidth * 0.68,
+              viewportWidth * 0.66,
           )
         : 0;
 
@@ -176,30 +150,19 @@ export function Work() {
           pinnedFraction;
 
       setMetrics((current) => {
-        const centersChanged =
-          current.cardCenters.length !== cardCenters.length ||
-          current.cardCenters.some(
-            (center, index) =>
-              Math.abs(center - (cardCenters[index] ?? 0)) > 0.5,
-          );
-
         const changed =
           Math.abs(
             current.travelDistance - nextTravelDistance,
           ) > 0.5 ||
           Math.abs(
             current.releaseDepth - nextReleaseDepth,
-          ) > 0.5 ||
-          Math.abs(current.viewportWidth - viewportWidth) > 0.5 ||
-          centersChanged;
+          ) > 0.5;
 
         if (!changed) return current;
 
         return {
           travelDistance: nextTravelDistance,
           releaseDepth: nextReleaseDepth,
-          viewportWidth,
-          cardCenters,
         };
       });
     };
@@ -240,20 +203,14 @@ export function Work() {
 
   const trackX = metrics.travelDistance * progress;
 
-  /**
-   * Use the project nearest the visual center as the current detail readout.
-   * This is only supporting content; the postcards themselves remain the hero.
-   */
-  const focusX =
-    trackX + Math.max(1, metrics.viewportWidth) * 0.5;
-
-  const activeIndex = Math.min(
-    site.work.projects.length - 1,
-    getNearestProjectIndex(metrics.cardCenters, focusX),
-  );
-
-  const activeProject = site.work.projects[activeIndex];
   const projectCount = site.work.projects.length;
+  const activeIndex = Math.min(
+    projectCount - 1,
+    Math.max(
+      0,
+      Math.round(progress * (projectCount - 1)),
+    ),
+  );
 
   return (
     <section
@@ -331,15 +288,10 @@ export function Work() {
                 "--work-aspect": layout.aspect,
               };
 
-              return (
-                <article
-                  key={project.id}
-                  data-work-card
-                  data-experience-signal="work"
-                  data-experience-index={index}
-                  className="work-showcase__card"
-                  style={cardStyle}
-                >
+              const liveUrl = project.liveUrl;
+
+              const cardContents = (
+                <>
                   <div className="work-showcase__media">
                     <Image
                       src={project.image}
@@ -359,6 +311,14 @@ export function Work() {
                         {project.visualCredit}
                       </span>
                     </div>
+
+                    {liveUrl ? (
+                      <div className="work-showcase__visit">
+                        <span className="readout readout-caps text-seaglass">
+                          Visit live site ↗
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="work-showcase__caption">
@@ -381,49 +341,39 @@ export function Work() {
                       {project.name}
                     </h3>
                   </div>
+                </>
+              );
+
+              return (
+                <article
+                  key={project.id}
+                  data-work-card
+                  data-experience-signal="work"
+                  data-experience-index={index}
+                  data-has-live-url={liveUrl ? "true" : "false"}
+                  className="work-showcase__card"
+                  style={cardStyle}
+                >
+                  {liveUrl ? (
+                    <a
+                      href={liveUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="work-showcase__project-link"
+                      aria-label={`Visit ${project.name} live site`}
+                    >
+                      {cardContents}
+                    </a>
+                  ) : (
+                    <div className="work-showcase__project-link">
+                      {cardContents}
+                    </div>
+                  )}
                 </article>
               );
             })}
           </div>
         </div>
-
-        <Container className="work-showcase__detail">
-          <div
-            aria-live="polite"
-            className="grid gap-4 border-t border-shelf/55 pt-4 md:grid-cols-[10rem_minmax(0,1fr)_auto] md:items-start md:gap-8"
-          >
-            <div>
-              <span className="readout readout-caps text-tide/70">
-                In focus
-              </span>
-              <p className="mt-1 text-sm font-semibold text-seaglass">
-                {activeProject.name}
-              </p>
-            </div>
-
-            <div>
-              <p className="max-w-[54ch] text-[0.88rem] leading-relaxed text-tide">
-                {activeProject.statement}
-              </p>
-
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                {activeProject.capabilities.map((capability) => (
-                  <span
-                    key={capability}
-                    className="text-[0.7rem] font-medium text-seaglass/70"
-                  >
-                    {capability}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <span className="readout tabular-nums text-tide/65">
-              {formatIndex(activeIndex)} /{" "}
-              {String(projectCount).padStart(2, "0")}
-            </span>
-          </div>
-        </Container>
       </div>
     </section>
   );

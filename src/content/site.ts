@@ -74,6 +74,7 @@ export const site = {
         id: "tidewater",
         name: "Tidewater Coffee",
         kind: "Lab Project",
+        liveUrl: null as string | null,
         pillar: "Brand & Creative",
         statement:
           "A coastal coffee identity built to feel recognizable from shelf to social.",
@@ -93,6 +94,7 @@ export const site = {
         id: "meridian",
         name: "Meridian Clinic",
         kind: "Lab Project",
+        liveUrl: null as string | null,
         pillar: "Web & Digital",
         statement:
           "A calmer digital experience for finding care, understanding services and booking quickly.",
@@ -112,6 +114,7 @@ export const site = {
         id: "harbor",
         name: "Harbor Freight Co-op",
         kind: "Lab Project",
+        liveUrl: null as string | null,
         pillar: "AI & Automation",
         statement:
           "A quoting workflow designed to turn messy requests into structured estimates faster.",
@@ -131,6 +134,7 @@ export const site = {
         id: "northstar",
         name: "Northstar Studio",
         kind: "Lab Project",
+        liveUrl: null as string | null,
         pillar: "Content & Video",
         statement:
           "One launch story turned into a repeatable system for short-form, editorial and campaign content.",
@@ -150,6 +154,7 @@ export const site = {
         id: "aster",
         name: "Aster Commerce",
         kind: "Lab Project",
+        liveUrl: null as string | null,
         pillar: "Web & Digital",
         statement:
           "A launch-focused commerce experience built to keep product storytelling and conversion aligned.",
