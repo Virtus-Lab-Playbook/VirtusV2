@@ -232,7 +232,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Selected Work — depth-driven horizontal project rail                       */
+/* Selected Work — #34 parallax gallery + #28 layered slider stage            */
 /* -------------------------------------------------------------------------- */
 
 .work-showcase {
@@ -260,26 +260,30 @@
 }
 
 .work-showcase__viewport {
+  position: relative;
   min-height: 0;
   overflow: hidden;
 }
 
-.work-showcase__track {
-  display: flex;
-  width: max-content;
+.work-showcase__stage {
+  position: relative;
+  width: 100%;
   height: 100%;
-  align-items: stretch;
-  gap: clamp(1.25rem, 2.2vw, 2rem);
-  will-change: transform;
-  backface-visibility: hidden;
+  min-height: 0;
 }
 
 .work-showcase__card {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
   display: flex;
+  width: min(86%, 58rem);
   min-height: 0;
   height: 100%;
-  flex: 0 0 clamp(22rem, 72vw, 58rem);
   flex-direction: column;
+  transform-origin: left center;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .work-showcase__media {
@@ -291,7 +295,11 @@
   background: var(--color-deep);
 }
 
-.work-showcase__image {
+.work-showcase__image-shell {
+  position: absolute;
+  inset-block: 0;
+  left: -10%;
+  width: 120%;
   will-change: transform;
   backface-visibility: hidden;
   transform-origin: center;
@@ -331,17 +339,24 @@
     display: none;
   }
 
-  .work-showcase__track {
+  .work-showcase__stage {
+    display: flex;
+    width: max-content;
     height: auto;
-    transform: none !important;
-    align-items: stretch;
-    will-change: auto;
+    gap: 1.25rem;
   }
 
   .work-showcase__card {
+    position: relative;
+    inset: auto;
+    z-index: auto !important;
+    width: auto;
     height: auto;
-    flex-basis: min(86vw, 32rem);
+    flex: 0 0 min(86vw, 32rem);
+    opacity: 1 !important;
+    transform: none !important;
     scroll-snap-align: start;
+    will-change: auto;
   }
 
   .work-showcase__media {
@@ -350,7 +365,9 @@
     flex: none;
   }
 
-  .work-showcase__image {
+  .work-showcase__image-shell {
+    left: 0;
+    width: 100%;
     transform: none !important;
     will-change: auto;
   }
@@ -437,15 +454,24 @@
     scrollbar-width: none;
   }
 
-  .work-showcase__track {
+  .work-showcase__stage {
+    display: flex;
+    width: max-content;
     height: auto;
-    transform: none !important;
-    will-change: auto;
+    gap: 1.25rem;
   }
 
   .work-showcase__card {
+    position: relative;
+    inset: auto;
+    z-index: auto !important;
+    width: auto;
     height: auto;
+    flex: 0 0 min(86vw, 32rem);
+    opacity: 1 !important;
+    transform: none !important;
     scroll-snap-align: start;
+    will-change: auto;
   }
 
   .work-showcase__media {
@@ -454,7 +480,9 @@
     flex: none;
   }
 
-  .work-showcase__image {
+  .work-showcase__image-shell {
+    left: 0;
+    width: 100%;
     transform: none !important;
     will-change: auto;
   }
