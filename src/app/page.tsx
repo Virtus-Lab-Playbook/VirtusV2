@@ -39,7 +39,7 @@ export default function Home() {
           depth={SECTION_DEPTHS.hero}
           nextDepth={SECTION_DEPTHS.work}
           mode="slide"
-          className="global-scroll-scene--hero"
+          className="global-scroll-scene--hero bg-abyss"
         >
           <Hero />
           <TrustStrip />
@@ -52,6 +52,7 @@ export default function Home() {
           previousDepth={SECTION_DEPTHS.work}
           depth={SECTION_DEPTHS.services}
           nextDepth={SECTION_DEPTHS.products}
+          className="bg-abyss-2"
         >
           <Services />
         </GlobalScrollScene>
@@ -60,6 +61,7 @@ export default function Home() {
           previousDepth={SECTION_DEPTHS.services}
           depth={SECTION_DEPTHS.products}
           nextDepth={SECTION_DEPTHS.whyUs}
+          className="bg-seaglass"
         >
           <DigitalProducts />
         </GlobalScrollScene>
@@ -69,6 +71,7 @@ export default function Home() {
           depth={SECTION_DEPTHS.whyUs}
           nextDepth={SECTION_DEPTHS.process}
           mode="sticky-safe"
+          className="bg-abyss"
         >
           <WhyUs />
         </GlobalScrollScene>
@@ -77,6 +80,7 @@ export default function Home() {
           previousDepth={SECTION_DEPTHS.whyUs}
           depth={SECTION_DEPTHS.process}
           nextDepth={SECTION_DEPTHS.engagements}
+          className="bg-abyss-2"
         >
           <Process />
         </GlobalScrollScene>
@@ -85,6 +89,7 @@ export default function Home() {
           previousDepth={SECTION_DEPTHS.process}
           depth={SECTION_DEPTHS.engagements}
           nextDepth={SECTION_DEPTHS.brief}
+          className="bg-shelf"
         >
           <Engagements />
         </GlobalScrollScene>
@@ -93,6 +98,7 @@ export default function Home() {
           previousDepth={SECTION_DEPTHS.engagements}
           depth={SECTION_DEPTHS.brief}
           nextDepth={SECTION_DEPTHS.faq}
+          className="bg-abyss"
         >
           <BriefBuilder />
         </GlobalScrollScene>
@@ -101,6 +107,7 @@ export default function Home() {
           previousDepth={SECTION_DEPTHS.brief}
           depth={SECTION_DEPTHS.faq}
           nextDepth={SECTION_DEPTHS.finalCta}
+          className="bg-abyss-2"
         >
           <Faq />
         </GlobalScrollScene>
@@ -110,6 +117,7 @@ export default function Home() {
           depth={SECTION_DEPTHS.finalCta}
           nextDepth={SECTION_DEPTHS.footer}
           mode="terminal"
+          className="bg-seaglass"
         >
           <FinalCta />
         </GlobalScrollScene>

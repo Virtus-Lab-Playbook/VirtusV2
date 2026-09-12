@@ -36,16 +36,12 @@ function smootherstep(value: number): number {
 /**
  * Global #28-inspired section transition.
  *
- * IMPORTANT:
- * - does NOT create another scroll listener
- * - does NOT create another RAF loop
- * - consumes the existing centralized depth system
- * - leaves sticky-heavy sections transform-free via "sticky-safe"
+ * The wrapper itself is the permanent section surface and NEVER moves or fades.
+ * Only the inner motion layer animates. This prevents transparent "holes"
+ * between sections from exposing the global Three.js canvas.
  *
- * The CodePen reference uses a vertical slider with parallax-enabled inner
- * layers. Here we preserve native document scrolling and adapt the same visual
- * language: incoming sections rise into place, settle, then retreat as the next
- * section takes over.
+ * No extra scroll listener or RAF is created here; the component only consumes
+ * the existing centralized depth state.
  */
 export function GlobalScrollScene({
   children,
@@ -63,18 +59,14 @@ export function GlobalScrollScene({
 
   const isStatic = qualityConfig.isStatic;
 
-  /**
-   * Keep the global transition responsive to actual scroll while borrowing
-   * enough of the site's existing smoothing to remove wheel stepping.
-   */
   const motionDepth =
-    rawDepth + (smoothedDepth - rawDepth) * 0.48;
+    rawDepth + (smoothedDepth - rawDepth) * 0.42;
 
   let enter = 1;
 
   if (!isStatic && depth > previousDepth) {
     const incomingSpan = Math.max(1, depth - previousDepth);
-    const enterStart = depth - incomingSpan * 0.42;
+    const enterStart = depth - incomingSpan * 0.38;
     const enterRange = Math.max(1, depth - enterStart);
 
     enter = smootherstep(
@@ -90,7 +82,7 @@ export function GlobalScrollScene({
     nextDepth > depth
   ) {
     const outgoingSpan = Math.max(1, nextDepth - depth);
-    const leaveStart = depth + outgoingSpan * 0.58;
+    const leaveStart = depth + outgoingSpan * 0.62;
     const leaveEnd = depth + outgoingSpan * 0.94;
     const leaveRange = Math.max(1, leaveEnd - leaveStart);
 
@@ -99,23 +91,22 @@ export function GlobalScrollScene({
     );
   }
 
+  /**
+   * Keep the visual language of #28 without moving content far enough to leave
+   * obvious empty bands. The outer surface remains fixed.
+   */
   const translateY =
-    (1 - enter) * 14 - leave * 10;
+    (1 - enter) * 7 - leave * 4.5;
 
   const scale =
-    0.985 + enter * 0.015 - leave * 0.008;
+    0.992 + enter * 0.008 - leave * 0.004;
 
   const opacity = clamp01(
-    0.38 + enter * 0.62 - leave * 0.28,
+    0.72 + enter * 0.28 - leave * 0.14,
   );
 
-  /**
-   * Sticky-safe sections cannot have a transformed ancestor without risking
-   * their sticky choreography. They therefore participate in the global
-   * transition through opacity only.
-   */
   const safeOpacity = clamp01(
-    0.58 + enter * 0.42 - leave * 0.16,
+    0.82 + enter * 0.18 - leave * 0.08,
   );
 
   const style: SceneStyle = {
