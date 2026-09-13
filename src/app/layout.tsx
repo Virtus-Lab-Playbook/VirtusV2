@@ -34,6 +34,10 @@ export const metadata: Metadata = {
       "A studio, not a stack of freelancers. Brand, web, content, and automation from one coordinated team.",
     type: "website",
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {
