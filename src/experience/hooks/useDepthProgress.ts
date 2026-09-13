@@ -8,13 +8,6 @@ import { useExperience } from "../ExperienceContext";
  * managed by the root ExperienceProvider.
  */
 export function useDepthProgress(): DepthState {
-  const experience = useExperience();
-  return {
-    rawProgress: experience.rawProgress,
-    smoothedProgress: experience.smoothedProgress,
-    rawDepth: experience.rawDepth,
-    smoothedDepth: experience.smoothedDepth,
-    velocity: experience.velocity,
-    currentZone: experience.currentZone,
-  };
+  const { motionStore } = useExperience();
+  return motionStore.getState();
 }

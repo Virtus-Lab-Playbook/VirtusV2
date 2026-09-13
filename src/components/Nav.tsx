@@ -2,84 +2,106 @@
 
 import { useEffect, useState } from "react";
 import { site } from "@/content/site";
-import { useExperience } from "@/experience/ExperienceContext";
 import { Wordmark } from "./Wordmark";
 
 export function Nav() {
   const [open, setOpen] = useState(false);
-  const { smoothedDepth, rawDepth, resetSignal } = useExperience();
+  const [lifted, setLifted] = useState(false);
+  const [activeNavHref, setActiveNavHref] = useState<string | null>(null);
 
-  // Unified scroll state derived directly from centralized depth system (no duplicate scroll listener)
-  const lifted = rawDepth > 15;
+  useEffect(() => {
+    const handleScroll = () => {
+      setLifted(window.scrollY > 20);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  // Derive active navigation section from depth architecture
-  let activeNavHref: string | null = null;
-  if (smoothedDepth >= 80 && smoothedDepth < 650) {
-    activeNavHref = "#services";
-  } else if (smoothedDepth >= 650 && smoothedDepth < 1350) {
-    activeNavHref = "#process";
-  } else if (smoothedDepth >= 1350 && smoothedDepth < 2400) {
-    activeNavHref = "#work";
-  } else if (smoothedDepth >= 2900 && smoothedDepth < 3500) {
-    activeNavHref = "#packages";
-  }
+  useEffect(() => {
+    const sectionIds = ["work", "services", "products", "why-us", "process"];
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveNavHref(`#${entry.target.id}`);
+          }
+        });
+      },
+      { rootMargin: "-30% 0px -60% 0px", threshold: 0 },
+    );
+
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
+
     if (open) {
-      resetSignal();
-      const onKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Escape") setOpen(false);
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") setOpen(false);
       };
+
       window.addEventListener("keydown", onKeyDown);
+
       return () => {
         document.body.style.overflow = "";
         window.removeEventListener("keydown", onKeyDown);
       };
     }
+
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open, resetSignal]);
+  }, [open]);
 
   return (
     <header
       className={`sticky top-0 z-40 transition-all duration-300 ${
         lifted
-          ? "border-b border-shelf-dim/80 bg-abyss/90 backdrop-blur-md shadow-[0_8px_32px_-12px_rgba(4,23,30,0.9)]"
+          ? "border-b border-shelf/55 bg-abyss/92 shadow-[0_8px_32px_-16px_rgba(15,27,42,0.9)] backdrop-blur-md"
           : "border-b border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex max-w-[74rem] items-center justify-between px-5 py-3.5 sm:px-8 lg:pl-[calc(var(--rail-w)+2rem)] lg:pr-10">
+      <div className="mx-auto flex max-w-[74rem] items-center justify-between px-5 py-3.5 sm:px-8 lg:px-10">
         <a
           href="#top"
-          className="shrink-0 transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-biolume"
+          className="shrink-0 transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tide"
           aria-label={`${site.name} — home`}
         >
           <Wordmark />
         </a>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {site.nav.links.map((l) => {
-            const isActive = l.href === activeNavHref;
+        <nav className="hidden items-center gap-6 lg:flex">
+          {site.nav.links.map((link) => {
+            const isActive = link.href === activeNavHref;
+
             return (
               <a
-                key={l.href}
-                href={l.href}
+                key={link.href}
+                href={link.href}
                 aria-current={isActive ? "location" : undefined}
-                className={`relative py-1 text-sm tracking-tight transition-colors duration-200 after:absolute after:bottom-0 after:left-0 after:h-px after:bg-biolume after:transition-all after:duration-250 ${
+                className={`relative py-1 text-sm tracking-tight transition-colors duration-200 after:absolute after:bottom-0 after:left-0 after:h-px after:bg-tide after:transition-all after:duration-200 ${
                   isActive
-                    ? "text-seaglass after:w-full font-semibold"
-                    : "text-tide after:w-0 hover:text-seaglass hover:after:w-full font-medium"
+                    ? "font-semibold text-seaglass after:w-full"
+                    : "font-medium text-tide after:w-0 hover:text-seaglass hover:after:w-full"
                 }`}
               >
-                {l.label}
+                {link.label}
               </a>
             );
           })}
+
           <a
             href={site.nav.action.href}
-            className="inline-flex min-h-10 items-center justify-center rounded-full bg-biolume px-5 py-2 text-sm font-medium tracking-tight text-abyss transition-all duration-200 hover:bg-seaglass hover:shadow-[0_0_20px_-4px_var(--color-biolume)] active:scale-[0.98]"
+            className="inline-flex min-h-10 items-center justify-center rounded-full bg-seaglass px-5 py-2 text-sm font-semibold tracking-tight text-abyss transition-all duration-300 hover:bg-tide active:scale-[0.98]"
           >
             {site.nav.action.label}
           </a>
@@ -87,8 +109,8 @@ export function Nav() {
 
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-12 w-12 items-center justify-center rounded-full text-seaglass transition-colors hover:text-biolume focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-biolume md:hidden"
+          onClick={() => setOpen((value) => !value)}
+          className="flex h-12 w-12 items-center justify-center rounded-full text-seaglass transition-colors hover:text-tide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tide lg:hidden"
           aria-expanded={open}
           aria-label={open ? "Close menu" : "Open menu"}
         >
@@ -113,36 +135,38 @@ export function Nav() {
       </div>
 
       {open ? (
-        <div className="border-t border-shelf-dim/80 bg-abyss/95 backdrop-blur-xl md:hidden animate-in fade-in duration-200">
+        <div className="border-t border-shelf/55 bg-abyss/98 backdrop-blur-xl lg:hidden">
           <nav className="flex flex-col px-5 py-4 sm:px-8">
-            {site.nav.links.map((l) => {
-              const isActive = l.href === activeNavHref;
+            {site.nav.links.map((link) => {
+              const isActive = link.href === activeNavHref;
+
               return (
                 <a
-                  key={l.href}
-                  href={l.href}
+                  key={link.href}
+                  href={link.href}
                   aria-current={isActive ? "location" : undefined}
                   onClick={() => setOpen(false)}
-                  className={`border-b border-shelf-dim/60 py-3.5 text-[0.95rem] transition-colors flex items-center justify-between ${
+                  className={`flex items-center justify-between border-b border-shelf/45 py-3.5 text-[0.95rem] transition-colors ${
                     isActive
-                      ? "text-seaglass font-medium"
+                      ? "font-medium text-seaglass"
                       : "text-tide hover:text-seaglass"
                   }`}
                 >
-                  <span>{l.label}</span>
+                  <span>{link.label}</span>
                   {isActive ? (
                     <span
                       aria-hidden
-                      className="h-1.5 w-1.5 rounded-full bg-biolume shadow-[0_0_8px_1px_var(--color-biolume)]"
+                      className="h-1.5 w-1.5 rounded-full bg-seaglass"
                     />
                   ) : null}
                 </a>
               );
             })}
+
             <a
               href={site.nav.action.href}
               onClick={() => setOpen(false)}
-              className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-biolume px-5 py-3 text-sm font-medium tracking-tight text-abyss transition-all duration-200 hover:bg-seaglass"
+              className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-seaglass px-5 py-3 text-sm font-semibold tracking-tight text-abyss transition-colors hover:bg-tide"
             >
               {site.nav.action.label}
             </a>

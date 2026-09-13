@@ -1,173 +1,416 @@
 /**
- * All Home page copy. Mirrors the Website Copy Deck (D14).
- * Edit copy here, never in components.
+ * Virtus Lab homepage content.
+ * Business-facing copy belongs here so components stay presentation-only.
  */
 
 export const site = {
   name: "Virtus Lab",
-  tagline: "Excellence, engineered.",
-  // TODO(Web Dev Pod): point at the real inbox once the domain is secured (§5.2).
-  contactEmail: "hello@virtuslab.studio",
-  // TODO(Copy + QA Pods): publish these, then the footer links go live (D16).
+  tagline: "Where brand, technology, and content move together.",
+
+  seo: {
+    description:
+      "Virtus Lab brings brand, web, content and automation under one coordinated digital studio.",
+    socialDescription:
+      "Brand, web, content and automation under one coordinated team.",
+  },
+
+  // Populate only after the real public studio inbox is confirmed.
+  contactEmail: null as string | null,
+
+  // Populate only after real legal pages are published.
   legal: {
-    privacy: "#privacy",
-    terms: "#terms",
+    privacy: null as string | null,
+    terms: null as string | null,
   },
 
   availability: "Accepting new projects",
-  announcement: "Accepting new projects",
 
   nav: {
     links: [
       { label: "Work", href: "#work" },
       { label: "Services", href: "#services" },
+      { label: "Products", href: "#products" },
       { label: "How we work", href: "#process" },
-      { label: "Packages", href: "#packages" },
+      { label: "About", href: "#why-us" },
     ],
     action: { label: "Build your brief", href: "#brief" },
   },
 
   hero: {
-    headline: "A full team behind every project.",
-    body: "Virtus Lab designs brands, builds websites, and ships content and automation for growing businesses abroad. One coordinated team, quality-checked work, and honest timelines — at a size that still moves fast.",
+    eyebrow: "Independent digital studio · Manila → Worldwide",
+    headline: "Where brand, technology, and content move together.",
+    body:
+      "Brand, web, content and automation under one coordinated team — from first idea to finished launch, without managing five different specialists.",
     primary: { label: "Build your brief", href: "#brief" },
-    secondary: { label: "See the work", href: "#work" },
-    // mono readout shown over the scene
-    coords: "14.5995 N · 120.9842 E — Manila",
+    secondary: { label: "View selected work", href: "#work" },
+    disciplines: [
+      "Brand & Creative",
+      "Web & Digital",
+      "Content & Video",
+      "AI & Automation",
+    ],
   },
 
   trust: {
     items: [
-      "Working across US, AU, UK & CA time zones",
-      "QA on every deliverable before you see it",
-      "Paid by PayPal, Wise, or Payoneer",
+      {
+        title: "One coordinated team",
+        desc:
+          "Brand, web, content and automation stay inside one project workflow.",
+      },
+      {
+        title: "Built-in QA",
+        desc: "Every deliverable is reviewed before it reaches you.",
+      },
+      {
+        title: "Remote-first",
+        desc:
+          "Structured to collaborate across US, UK, AU and CA time zones.",
+      },
+    ],
+  },
+
+  work: {
+    title: "Selected work",
+    intro:
+      "Selected concepts across brand, web, content and automation — built to show how we think, design and execute.",
+    note:
+      "Lab Projects are concept work. Real client case studies replace them as work ships.",
+    projects: [
+      {
+        id: "tidewater",
+        name: "Tidewater Coffee",
+        kind: "Lab Project",
+        liveUrl: null as string | null,
+        pillar: "Brand & Creative",
+        statement:
+          "A coastal coffee identity built to feel recognizable from shelf to social.",
+        capabilities: [
+          "Brand Strategy",
+          "Visual Identity",
+          "Packaging",
+          "Social System",
+        ],
+        image:
+          "https://images.pexels.com/photos/29795384/pexels-photo-29795384.jpeg?auto=compress&cs=tinysrgb&w=1600",
+        imageAlt:
+          "Placeholder stock visual used to represent the Tidewater Coffee lab project.",
+        visualCredit: "Concept visual · Pexels",
+      },
+      {
+        id: "meridian",
+        name: "Meridian Clinic",
+        kind: "Lab Project",
+        liveUrl: null as string | null,
+        pillar: "Web & Digital",
+        statement:
+          "A calmer digital experience for finding care, understanding services and booking quickly.",
+        capabilities: [
+          "UX Strategy",
+          "Information Architecture",
+          "UI Design",
+          "Responsive Web",
+        ],
+        image:
+          "https://images.pexels.com/photos/8015460/pexels-photo-8015460.jpeg?auto=compress&cs=tinysrgb&w=1600",
+        imageAlt:
+          "Placeholder stock visual of minimalist white product containers used to represent the Meridian Clinic lab project.",
+        visualCredit: "Concept visual · Pexels",
+      },
+      {
+        id: "harbor",
+        name: "Harbor Freight Co-op",
+        kind: "Lab Project",
+        liveUrl: null as string | null,
+        pillar: "AI & Automation",
+        statement:
+          "A quoting workflow designed to turn messy requests into structured estimates faster.",
+        capabilities: [
+          "Workflow Design",
+          "AI Assistance",
+          "Structured Data",
+          "Internal Tool UX",
+        ],
+        image:
+          "https://images.pexels.com/photos/24244230/pexels-photo-24244230.jpeg?auto=compress&cs=tinysrgb&w=1600",
+        imageAlt:
+          "Placeholder stock visual of a logistics container terminal used to represent the Harbor Freight Co-op lab project.",
+        visualCredit: "Concept visual · Pexels",
+      },
+      {
+        id: "northstar",
+        name: "Northstar Studio",
+        kind: "Lab Project",
+        liveUrl: null as string | null,
+        pillar: "Content & Video",
+        statement:
+          "One launch story turned into a repeatable system for short-form, editorial and campaign content.",
+        capabilities: [
+          "Creative Direction",
+          "Content System",
+          "Video Editing",
+          "Social Adaptation",
+        ],
+        image:
+          "https://images.pexels.com/photos/3753759/pexels-photo-3753759.jpeg?auto=compress&cs=tinysrgb&w=1600",
+        imageAlt:
+          "Placeholder stock visual of a modern creative editing workspace used to represent the Northstar Studio lab project.",
+        visualCredit: "Concept visual · Pexels",
+      },
+      {
+        id: "aster",
+        name: "Aster Commerce",
+        kind: "Lab Project",
+        liveUrl: null as string | null,
+        pillar: "Web & Digital",
+        statement:
+          "A launch-focused commerce experience built to keep product storytelling and conversion aligned.",
+        capabilities: [
+          "Campaign Strategy",
+          "Web Design",
+          "Commerce UX",
+          "Creative Direction",
+        ],
+        image:
+          "https://images.pexels.com/photos/6483614/pexels-photo-6483614.jpeg?auto=compress&cs=tinysrgb&w=1600",
+        imageAlt:
+          "Placeholder stock visual of a clean laptop workspace used to represent the Aster Commerce lab project.",
+        visualCredit: "Concept visual · Pexels",
+      },
     ],
   },
 
   services: {
-    title: "What we make",
-    intro: "Four practices, one team. Take one or bundle them — the handoffs stay inside the studio.",
+    title: "What we do",
+    intro:
+      "Four disciplines, one coordinated studio. Start with one, or bring them together when the project needs more.",
+    closing:
+      "Need more than one discipline? We build the team around the project, not the other way around.",
     pillars: [
       {
         id: "brand",
-        name: "Brand & Design",
-        desc: "Logos, brand kits, social graphics, and pitch decks that hold up next to any agency.",
+        slug: "brand",
+        name: "Brand & Creative",
+        outcome:
+          "Build a brand people can recognize, remember and use consistently.",
+        capabilities: [
+          "Brand strategy",
+          "Visual identity",
+          "Logo systems",
+          "Brand guidelines",
+          "Campaign creative",
+          "Social design",
+          "Pitch decks",
+          "Marketing assets",
+        ],
+        relatedWork: "Tidewater Coffee",
       },
       {
         id: "web",
-        name: "Web",
-        desc: "Landing pages, business sites, and redesigns — fast, accessible, and easy for you to run.",
+        slug: "web",
+        name: "Web & Digital",
+        outcome:
+          "Turn attention into a digital experience that is clear, fast and built to convert.",
+        capabilities: [
+          "Landing pages",
+          "Business websites",
+          "Website redesign",
+          "UX/UI",
+          "Design systems",
+          "Frontend development",
+          "CMS integration",
+          "E-commerce",
+        ],
+        relatedWork: "Meridian Clinic · Aster Commerce",
       },
       {
         id: "content",
+        slug: "content",
         name: "Content & Video",
-        desc: "Short-form edits, ad creative, and content calendars, produced on a repeatable schedule.",
+        outcome:
+          "Turn ideas, launches and campaigns into content systems that keep producing.",
+        capabilities: [
+          "Creative direction",
+          "Short-form video",
+          "Video editing",
+          "Ad creative",
+          "Social content",
+          "Campaign assets",
+          "Content systems",
+          "Repurposing",
+        ],
+        relatedWork: "Northstar Studio",
       },
       {
         id: "ai",
+        slug: "automation",
         name: "AI & Automation",
-        desc: "Chatbots, workflow automation, and content systems that take the busywork off your desk.",
+        outcome:
+          "Remove repetitive work with AI-assisted systems designed around how your business actually operates.",
+        capabilities: [
+          "Workflow automation",
+          "Internal tools",
+          "AI assistants",
+          "Lead workflows",
+          "Content pipelines",
+          "Data processing",
+          "Knowledge systems",
+          "System integrations",
+        ],
+        relatedWork: "Harbor Freight Co-op",
+      },
+    ],
+  },
+
+  products: {
+    eyebrow: "Digital products",
+    title: "Tools built to keep working after we leave.",
+    intro:
+      "Ready-made systems, templates and digital resources for teams that want to move faster without starting from zero.",
+    note:
+      "Products stand on their own. You do not need a service engagement to use them.",
+    families: [
+      {
+        id: "workflow-tools",
+        name: "Workflow Tools",
+        desc:
+          "Practical tools for repeatable operations, planning and execution.",
+        includes: ["Operations", "Planning", "Handoffs", "Repeatable workflows"],
+      },
+      {
+        id: "ai-systems",
+        name: "AI Systems",
+        desc:
+          "Reusable AI-assisted systems built around focused business jobs.",
+        includes: ["Assistants", "Content systems", "Knowledge flows", "Automation"],
+      },
+      {
+        id: "templates",
+        name: "Templates",
+        desc:
+          "Structured starting points for teams that need consistency without a blank page.",
+        includes: ["Creative", "Project systems", "Planning", "Documentation"],
+      },
+      {
+        id: "digital-resources",
+        name: "Digital Resources",
+        desc:
+          "Focused references and practical assets designed to be used, not just read.",
+        includes: ["Guides", "Libraries", "Frameworks", "Reference kits"],
+      },
+    ],
+  },
+
+  why: {
+    title: "Why Virtus",
+    intro:
+      "The flexibility of a small studio, without making you manage the pieces.",
+    points: [
+      {
+        name: "One coordinated team",
+        desc:
+          "Strategy, design, development, content and automation can move inside one workflow.",
+      },
+      {
+        name: "Quality before handoff",
+        desc:
+          "Every deliverable is checked before it becomes your problem to find.",
+      },
+      {
+        name: "AI accelerated. Human owned.",
+        desc:
+          "We use AI where it improves speed and capability. A person remains accountable for what ships.",
+      },
+      {
+        name: "Built for async collaboration",
+        desc:
+          "Clear owners, written updates and agreed response times keep projects moving across time zones.",
       },
     ],
   },
 
   process: {
     title: "How we work",
-    intro: "Five stages, each with one named owner. You always know who to ask and what happens next.",
+    intro:
+      "Five stages. One clear owner at every step. You always know what is happening, what comes next and who is responsible.",
     steps: [
-      { name: "Discover", desc: "We learn your goals, audience, and constraints, then agree on what success looks like." },
-      { name: "Design", desc: "Directions, then a chosen route taken to high fidelity. Two focused revision rounds." },
-      { name: "Build", desc: "Production in the open, with preview links so you see progress, not just milestones." },
-      { name: "Deliver", desc: "QA against the brief, a walkthrough, and every source file handed to you." },
-      { name: "Support", desc: "A care window after launch for fixes, plus optional ongoing maintenance." },
-    ],
-  },
-
-  work: {
-    title: "Selected work",
-    intro: "Concept work while the studio is new — labelled honestly. Real case studies replace these as projects ship.",
-    projects: [
       {
-        id: "tidewater",
-        name: "Tidewater Coffee",
-        kind: "Lab Project",
-        pillar: "Brand & Design",
-        depth: "0420 m",
-        desc: "Identity and packaging for a coastal roaster — a wordmark built from a single continuous stroke.",
-        image:
-          "https://images.pexels.com/photos/29795384/pexels-photo-29795384.jpeg?auto=compress&cs=tinysrgb&w=1600",
-        imageAlt:
-          "Placeholder stock visual used to represent the Tidewater Coffee lab project.",
-        visualCredit: "Mock visual · Pexels",
+        name: "Discover",
+        desc:
+          "Goals, audience, constraints, scope and success criteria are aligned before production begins.",
       },
       {
-        id: "meridian",
-        name: "Meridian Clinic",
-        kind: "Lab Project",
-        pillar: "Web",
-        depth: "0980 m",
-        desc: "A calm, bookable site for a multi-location practice, with plain-language patient information.",
-        image:
-          "https://images.pexels.com/photos/8015460/pexels-photo-8015460.jpeg?auto=compress&cs=tinysrgb&w=1600",
-        imageAlt:
-          "Placeholder stock visual of minimalist white product containers used to represent the Meridian Clinic lab project.",
-        visualCredit: "Mock visual · Pexels",
+        name: "Design",
+        desc:
+          "Direction comes first, then the chosen route is developed with focused feedback.",
       },
       {
-        id: "harbor",
-        name: "Harbor Freight Co-op",
-        kind: "Lab Project",
-        pillar: "AI & Automation",
-        depth: "1600 m",
-        desc: "A quoting assistant that turns a rough parts list into a costed estimate in under a minute.",
-        image:
-          "https://images.pexels.com/photos/24244230/pexels-photo-24244230.jpeg?auto=compress&cs=tinysrgb&w=1600",
-        imageAlt:
-          "Placeholder stock visual of a logistics container terminal used to represent the Harbor Freight Co-op lab project.",
-        visualCredit: "Mock visual · Pexels",
+        name: "Build",
+        desc:
+          "Production stays visible through working previews and clear progress updates.",
       },
       {
-        id: "northstar",
-        name: "Northstar Studio",
-        kind: "Lab Project",
-        pillar: "Content & Video",
-        depth: "1980 m",
-        desc: "A modular campaign system for turning one launch story into repeatable social, editorial, and short-form content.",
-        image:
-          "https://images.pexels.com/photos/3753759/pexels-photo-3753759.jpeg?auto=compress&cs=tinysrgb&w=1600",
-        imageAlt:
-          "Placeholder stock visual of a modern creative editing workspace used to represent the Northstar Studio lab project.",
-        visualCredit: "Mock visual · Pexels",
+        name: "Deliver",
+        desc:
+          "Final QA, handoff, walkthrough and agreed source files close the production phase.",
       },
       {
-        id: "aster",
-        name: "Aster Commerce",
-        kind: "Lab Project",
-        pillar: "Web",
-        depth: "2280 m",
-        desc: "A conversion-focused product launch site with a restrained editorial system built for campaigns that change quickly.",
-        image:
-          "https://images.pexels.com/photos/6483614/pexels-photo-6483614.jpeg?auto=compress&cs=tinysrgb&w=1600",
-        imageAlt:
-          "Placeholder stock visual of a clean laptop workspace used to represent the Aster Commerce lab project.",
-        visualCredit: "Mock visual · Pexels",
+        name: "Support",
+        desc:
+          "A defined care period follows launch, with ongoing support available when the project needs it.",
       },
     ],
   },
 
-  why: {
-    title: "Why Virtus Lab",
-    points: [
-      { name: "A team, not a solo act", desc: "Every project has a lead, a maker, and a reviewer. Nobody works without a backup." },
-      { name: "QA before handoff", desc: "A checklist runs on every deliverable — spelling, links, contrast, responsiveness — before it reaches you." },
-      { name: "AI-augmented, member-owned", desc: "We use modern tools to move faster, but a person owns and refines everything that ships." },
-      { name: "Clear across time zones", desc: "Agreed response times and async updates, so distance never means silence." },
+  engagements: {
+    title: "Ways to work with us",
+    intro:
+      "Choose the shape that matches the problem. Scope and pricing are confirmed after we understand the work.",
+    models: [
+      {
+        name: "Focused",
+        summary: "One clear problem. One defined outcome.",
+        goodFor: [
+          "Landing pages",
+          "Brand refreshes",
+          "Campaign assets",
+          "Single automations",
+        ],
+      },
+      {
+        name: "Growth",
+        summary: "A broader system with several connected pieces.",
+        goodFor: [
+          "Full websites",
+          "Brand systems",
+          "Launch campaigns",
+          "Content systems",
+        ],
+      },
+      {
+        name: "Integrated",
+        summary: "Multiple Virtus disciplines working as one project team.",
+        goodFor: [
+          "Brand + website",
+          "Web + automation",
+          "Launch + content",
+          "Multi-system projects",
+        ],
+      },
     ],
+    note:
+      "Every engagement is quoted to scope. Payment schedule and supported business payment channels are confirmed in the project quote.",
   },
 
   brief: {
-    title: "Tell us what you're after",
-    intro: "No forms, no typing — just tap. It takes about thirty seconds and gives us enough to reply with something useful.",
+    title: "Start with a brief.",
+    intro:
+      "A few choices give us enough context to understand the project before we talk. No long form and no perfect brief required.",
+    productEscape: {
+      label: "Looking for something ready-made?",
+      action: "View digital products",
+      href: "/products",
+    },
     steps: [
       {
         id: "need",
@@ -175,7 +418,12 @@ export const site = {
         prompt: "What do you need?",
         hint: "Pick as many as apply.",
         multi: true,
-        options: ["Brand & design", "A website", "Content & video", "AI & automation"],
+        options: [
+          "Brand & Creative",
+          "Web & Digital",
+          "Content & Video",
+          "AI & Automation",
+        ],
       },
       {
         id: "state",
@@ -183,7 +431,11 @@ export const site = {
         prompt: "Where is it now?",
         hint: "Pick one.",
         multi: false,
-        options: ["Starting fresh", "Reworking what we have", "Fixing something that broke"],
+        options: [
+          "Starting fresh",
+          "Improving what exists",
+          "Fixing something that is not working",
+        ],
       },
       {
         id: "feel",
@@ -206,55 +458,54 @@ export const site = {
         prompt: "When do you need it?",
         hint: "Pick one.",
         multi: false,
-        options: ["In a few weeks", "One to two months", "No fixed date"],
+        options: ["In a few weeks", "One to two months", "Flexible"],
       },
       {
         id: "budget",
         label: "Budget",
         prompt: "Budget to work within",
-        hint: "In USD. Pick one — a range is fine.",
+        hint: "In USD. A range is fine.",
         multi: false,
-        options: ["Under $1k", "$1k – $3k", "$3k – $7k", "$7k+", "Not sure yet"],
+        options: [
+          "Under $1k",
+          "$1k – $3k",
+          "$3k – $7k",
+          "$7k+",
+          "Not sure yet",
+        ],
       },
     ],
+    contact: {
+      title: "Where should we reply?",
+      intro:
+        "Add your details when the brief is ready. Name, email and at least one project need are required.",
+      name: "Name",
+      email: "Email",
+      company: "Company",
+      companyOptional: "Optional",
+      message: "Anything else we should know?",
+      messageOptional: "Optional",
+      submit: "Send project brief",
+      submitting: "Sending brief...",
+      successTitle: "Brief received.",
+      successBody:
+        "Your project brief was sent successfully. The email you provided will be used as the reply address.",
+      error:
+        "We could not send the brief right now. Your selections are still here, so you can try again or copy the brief.",
+      required:
+        "Add your name, email and at least one project need before sending.",
+      another: "Send another brief",
+    },
     summary: {
       title: "Your brief",
-      empty: "Make a few choices above and your brief builds itself here.",
-      send: "Send this brief",
+      empty: "Make a few choices and your brief builds itself here.",
+      send: "Send project brief",
       copy: "Copy brief",
       copied: "Copied",
       reset: "Start over",
-      note: "Sending opens your email app with the brief written out. Change anything before you hit send.",
+      note:
+        "Your brief is submitted directly from this page. Copy Brief remains available as a fallback.",
     },
-  },
-
-  packages: {
-    title: "Packages",
-    intro: "Starting points, not ceilings. Every engagement is quoted to the work — this is where the conversation begins.",
-    // TODO(Agency Sub-Leader): replace placeholder prices with real "starting at" figures in USD (§5.4).
-    tiers: [
-      {
-        name: "Starter",
-        price: "from $900",
-        for: "One clear thing, done well.",
-        includes: ["A landing page or a logo suite", "One round of directions", "Two revision rounds", "Source files + a handoff call"],
-        featured: false,
-      },
-      {
-        name: "Growth",
-        price: "from $2,400",
-        for: "A brand or a site with room to grow.",
-        includes: ["Multi-page site or full brand kit", "Design system + components", "Content support", "30-day post-launch care"],
-        featured: true,
-      },
-      {
-        name: "Premium",
-        price: "from $6,000",
-        for: "Brand, web, and automation together.",
-        includes: ["Everything in Growth", "Automation & AI workflows", "Ongoing content production", "Priority support window"],
-        featured: false,
-      },
-    ],
   },
 
   faq: {
@@ -262,39 +513,71 @@ export const site = {
     items: [
       {
         q: "How do payments work?",
-        a: "A deposit before kickoff, the balance on delivery. Invoices are in USD and go to the studio's designated account — never a personal one.",
+        a:
+          "The payment schedule and supported business payment channels are confirmed in the project quote before kickoff.",
       },
       {
-        q: "What's a typical timeline?",
-        a: "A landing page runs one to two weeks. A full site or brand runs three to six. We agree the schedule before we start and flag slips early.",
+        q: "What is a typical timeline?",
+        a:
+          "Timeline depends on scope. We agree milestones before kickoff, keep progress visible and flag risks early.",
       },
       {
-        q: "How many revisions are included?",
-        a: "Two focused rounds at each design stage. Feedback is consolidated into one list so nothing gets lost between rounds.",
+        q: "How do revisions work?",
+        a:
+          "Revision scope is agreed before the project starts so feedback stays focused and expectations stay clear.",
       },
       {
         q: "Who owns the files?",
-        a: "You do, once the final payment clears. You get every source file — no lock-in, no license to renew.",
+        a:
+          "Ownership, source-file handoff and any licensing terms are stated clearly in the project quote before work begins.",
       },
       {
         q: "How do time zones work?",
-        a: "We keep hours that overlap US, AU, UK, and CA business days, with agreed response times and written updates in between.",
+        a:
+          "Virtus is structured for async collaboration across US, UK, AU and CA business days, with written updates and agreed response expectations.",
+      },
+      {
+        q: "How do you use AI in client work?",
+        a:
+          "AI is used where it improves speed or capability, but a person remains responsible for reviewing and refining what ships.",
       },
       {
         q: 'What does "Lab Project" mean?',
-        a: "Concept work we made to show our range, not paid client work. It's always labelled as such. Real case studies replace it as projects ship.",
+        a:
+          "It is concept work created to demonstrate a capability, not paid client work. Lab Projects are labelled clearly and are replaced by real case studies as client work ships.",
       },
     ],
   },
 
   finalCta: {
-    line: "Let's build something excellent.",
+    eyebrow: "Start a project",
+    line: "Have something worth building?",
+    subline: "Let's make it move.",
     action: { label: "Build your brief", href: "#brief" },
   },
 
   footer: {
-    tagline: "Excellence, engineered.",
-    built: "Built in the deep — Manila, for the world.",
+    tagline: "Where brand, technology, and content move together.",
+    built: "Manila → Worldwide",
+    disclosure: "Lab Projects are clearly labelled.",
+    groups: [
+      {
+        title: "Explore",
+        links: [
+          { label: "Work", href: "#work" },
+          { label: "Services", href: "#services" },
+          { label: "Products", href: "#products" },
+        ],
+      },
+      {
+        title: "Studio",
+        links: [
+          { label: "Why Virtus", href: "#why-us" },
+          { label: "How we work", href: "#process" },
+          { label: "Build your brief", href: "#brief" },
+        ],
+      },
+    ],
   },
 } as const;
 

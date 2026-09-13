@@ -79,9 +79,9 @@ export function createAbyssFloor(quality: SceneQuality): AbyssFloorInstance {
     vertexShader: FLOOR_VERT,
     fragmentShader: FLOOR_FRAG,
     uniforms: {
-      uColorAbyss: { value: new THREE.Color(0x04171e) },
-      uColorShelf: { value: new THREE.Color(0x22505f) },
-      uColorBrass: { value: new THREE.Color(0xc8a24a) },
+      uColorAbyss: { value: new THREE.Color(0x0f1b2a) },
+      uColorShelf: { value: new THREE.Color(0x435a76) },
+      uColorBrass: { value: new THREE.Color(0xe0e1dc) },
       uOpacity: { value: 0.0 },
     },
     transparent: true,

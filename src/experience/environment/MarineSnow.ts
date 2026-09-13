@@ -37,9 +37,9 @@ export function createMarineSnow(quality: SceneQuality): MarineSnowInstance {
   spriteCanvas.height = 64;
   const sctx = spriteCanvas.getContext("2d")!;
   const grd = sctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grd.addColorStop(0, "rgba(240, 244, 243, 0.95)");
-  grd.addColorStop(0.35, "rgba(169, 191, 196, 0.38)");
-  grd.addColorStop(1, "rgba(169, 191, 196, 0.0)");
+  grd.addColorStop(0, "rgba(224, 225, 220, 0.90)");
+  grd.addColorStop(0.35, "rgba(121, 141, 168, 0.35)");
+  grd.addColorStop(1, "rgba(121, 141, 168, 0.0)");
   sctx.fillStyle = grd;
   sctx.fillRect(0, 0, 64, 64);
 

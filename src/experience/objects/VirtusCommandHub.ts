@@ -123,7 +123,7 @@ export function createVirtusCommandHub(
   // ---------------------------------------------------------------------------
   const housingMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x0a242c,
+      color: 0x1c2639,
       metalness: 0.92,
       roughness: 0.27,
     }),
@@ -131,7 +131,7 @@ export function createVirtusCommandHub(
 
   const innerMetalMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x12333b,
+      color: 0x435a76,
       metalness: 0.86,
       roughness: 0.34,
     }),
@@ -139,7 +139,7 @@ export function createVirtusCommandHub(
 
   const supportMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x0d2b33,
+      color: 0x435a76,
       metalness: 0.8,
       roughness: 0.42,
     }),
@@ -147,8 +147,8 @@ export function createVirtusCommandHub(
 
   const brassMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0xc8a24a,
-      emissive: 0xc8a24a,
+      color: 0x798da8,
+      emissive: 0x798da8,
       emissiveIntensity: 0,
       metalness: 0.9,
       roughness: 0.26,
@@ -157,7 +157,7 @@ export function createVirtusCommandHub(
 
   const smokyCoreMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x04171e,
+      color: 0x0f1b2a,
       metalness: 0.58,
       roughness: 0.18,
       transparent: true,
@@ -167,8 +167,8 @@ export function createVirtusCommandHub(
 
   const biolumeMat = trackMat(
     new THREE.MeshStandardMaterial({
-      color: 0x31e0be,
-      emissive: 0x31e0be,
+      color: 0xe0e1dc,
+      emissive: 0x798da8,
       emissiveIntensity: 0.62,
       transparent: true,
       opacity: 0.9,
@@ -340,6 +340,20 @@ export function createVirtusCommandHub(
     signalState?: SignalState,
   ) => {
     const env = getEnvironmentState(depthState.smoothedDepth);
+    const servicePortalFactor =
+      THREE.MathUtils.smoothstep(
+        depthState.rawDepth,
+        1450,
+        1660,
+      ) *
+      (
+        1 -
+        THREE.MathUtils.smoothstep(
+          depthState.rawDepth,
+          1980,
+          2180,
+        )
+      );
     const turnMultiplier = viewportTurnMultiplier(viewport.width);
 
     // Use section-aware RAW depth to define the destination angle. Mechanical
@@ -368,15 +382,28 @@ export function createVirtusCommandHub(
     let targetYaw = 0;
     let targetBiolume = 0;
     let targetBrass = 0;
+    let targetNodeIndex = -1;
 
     if (signalState) {
       const { activeSignal, activeSignalIndex } = signalState;
 
-      if (activeSignal === "service") {
+      if (activeSignal === "discipline") {
+        const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
+        targetNodeIndex = (idx * 2) % nodeGroups.length;
+        targetGimbal = (idx - 1.5) * 0.035;
+        targetYaw = (idx - 1.5) * 0.028;
+        targetBiolume = 0.18;
+      } else if (activeSignal === "service") {
         const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
         targetGimbal = (idx - 1.5) * 0.025;
         targetYaw = (idx - 1.5) * 0.018;
         targetBiolume = 0.12;
+      } else if (activeSignal === "why") {
+        const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
+        targetNodeIndex = (idx * 2 + 1) % nodeGroups.length;
+        targetGimbal = Math.sin((idx + 1) * 0.9) * 0.024;
+        targetYaw = (idx - 1.5) * 0.016;
+        targetBiolume = 0.1;
       } else if (activeSignal === "process") {
         const idx = activeSignalIndex >= 0 ? activeSignalIndex : 0;
         targetGimbal = Math.sin(idx * 1.2) * 0.02;
@@ -430,7 +457,20 @@ export function createVirtusCommandHub(
     // 0.97 leaves a tiny 3% residual mechanical rotation so stabilization does
     // not feel mathematically sterile.
     for (let i = 0; i < nodeGroups.length; i++) {
-      nodeGroups[i].rotation.z = -outerVisual * 0.97;
+      const node = nodeGroups[i];
+
+      node.rotation.z = -outerVisual * 0.97;
+
+      const nodeTargetScale =
+        i === targetNodeIndex ? 1.18 : 1;
+
+      const nextScale = THREE.MathUtils.lerp(
+        node.scale.x,
+        nodeTargetScale,
+        1 - Math.exp(-6.5 * dt),
+      );
+
+      node.scale.setScalar(nextScale);
     }
 
     // -----------------------------------------------------------------------
@@ -442,8 +482,8 @@ export function createVirtusCommandHub(
 
     if (viewport.width < 640) {
       baseX = 0;
-      baseY = 0.35;
-      baseScale = 0.47;
+      baseY = -1.55;
+      baseScale = 0.43;
     } else if (viewport.width < 1024) {
       baseX = 0.75;
       baseY = 0.15;
@@ -453,8 +493,46 @@ export function createVirtusCommandHub(
       baseScale = 0.78;
     }
 
-    const depthZ = 0.5 + env.coreZOffset;
-    const depthScale = baseScale * (0.48 + env.coreVisibility * 0.52);
+    if (
+      viewport.width >= 1024
+    ) {
+      baseX =
+        THREE.MathUtils.lerp(
+          baseX,
+          2.48,
+          servicePortalFactor,
+        );
+
+      baseY =
+        THREE.MathUtils.lerp(
+          baseY,
+          0.08,
+          servicePortalFactor,
+        );
+    }
+
+    const presentationVisibility =
+      Math.max(
+        env.coreVisibility,
+        servicePortalFactor *
+          0.72,
+      );
+
+    const depthZ =
+      THREE.MathUtils.lerp(
+        0.5 +
+          env.coreZOffset,
+        -0.15,
+        servicePortalFactor,
+      );
+
+    const depthScale =
+      baseScale *
+      (
+        0.48 +
+        presentationVisibility *
+          0.52
+      );
 
     group.position.set(baseX, baseY, depthZ);
     group.scale.setScalar(depthScale);
@@ -478,11 +556,11 @@ export function createVirtusCommandHub(
     // -----------------------------------------------------------------------
     // Depth + signal material response
     // -----------------------------------------------------------------------
-    smokyCoreMat.opacity = 0.82 * env.coreVisibility;
-    biolumeMat.opacity = 0.9 * env.coreVisibility;
+    smokyCoreMat.opacity = 0.82 * presentationVisibility;
+    biolumeMat.opacity = 0.9 * presentationVisibility;
     biolumeMat.emissiveIntensity =
-      (0.62 + signalBiolumeBoost) * env.coreVisibility;
-    brassMat.emissiveIntensity = signalBrassWarmth * env.coreVisibility;
+      (0.62 + signalBiolumeBoost) * presentationVisibility;
+    brassMat.emissiveIntensity = signalBrassWarmth * presentationVisibility;
   };
 
   const dispose = () => {
