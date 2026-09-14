@@ -54,12 +54,12 @@ void main(){
   float gate = 0.55 + 0.45 * sin(uTime * 0.25);
   float aCaust = smoothstep(0.42, 0.9, c) * gate * uAbyssRays * 0.7;
 
-  // Palette: deep abyss, shelf, biolume glow, instrument brass
-  vec3 abyss = vec3(0.016, 0.090, 0.118);     // #04171e
-  vec3 deepFloor = vec3(0.008, 0.045, 0.060);
-  vec3 mid   = vec3(0.055, 0.215, 0.270);
-  vec3 glow  = vec3(0.192, 0.878, 0.745);     // biolume #31e0be
-  vec3 brass = vec3(0.784, 0.635, 0.290);     // brass #c8a24a
+  // Approved Deep Sea palette.
+  vec3 abyss = vec3(0.059, 0.106, 0.165);      // #0F1B2A
+  vec3 deepFloor = abyss * 0.55;
+  vec3 mid = vec3(0.263, 0.353, 0.463);        // #435A76
+  vec3 glow = vec3(0.475, 0.553, 0.659);       // #798DA8
+  vec3 accent = vec3(0.878, 0.882, 0.863);     // #E0E1DC
 
   vec3 baseDeep = mix(abyss, deepFloor, uDarkness);
   vec3 col = mix(baseDeep, mid, topLight * (1.0 - uDarkness * 0.5));
@@ -77,7 +77,7 @@ void main(){
   col += glow * bloom;
 
   // Terminal pointer warm ember (blending biolume and instrument brass)
-  col += (glow * 0.7 + brass * 0.3) * exp(-md * 4.5) * uAbyssEmber;
+  col += (glow * 0.72 + accent * 0.28) * exp(-md * 4.5) * uAbyssEmber;
 
   // Edge vignette
   float vig = smoothstep(1.4, 0.15, length(p));

@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -22,6 +23,7 @@ import {
   MAX_DEPTH_METERS,
 } from "./experience-config";
 import { useSceneQuality } from "./hooks/useSceneQuality";
+import { createExperienceMotionStore } from "./experience-motion-store";
 
 interface MeasuredMilestone {
   id: string;
@@ -50,7 +52,11 @@ const ExperienceContext = createContext<ExperienceContextValue | null>(null);
 
 export function ExperienceProvider({ children }: { children: ReactNode }) {
   const qualityConfig = useSceneQuality();
-  const [depthState, setDepthState] = useState<DepthState>(initialDepthState);
+  const [motionStore] = useState(() =>
+    createExperienceMotionStore(
+      initialDepthState,
+    ),
+  );
   const [signalState, setSignalState] = useState<SignalState>(initialSignalState);
 
   const triggerSignal = useCallback((type: ExperienceSignalType, index: number = -1) => {
@@ -162,7 +168,7 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
           velocity: 0,
           currentZone: activeZoneRef.current,
         };
-        setDepthState({ ...stateRef.current });
+        motionStore.publish(stateRef.current);
         rafRef.current = 0;
         return;
       }
@@ -181,7 +187,7 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
         currentZone: activeZoneRef.current,
       };
 
-      setDepthState({ ...stateRef.current });
+      motionStore.publish(stateRef.current);
       rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -250,7 +256,7 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [qualityConfig.isStatic]);
+  }, [qualityConfig.isStatic, motionStore]);
 
   // Delegated Scene-Signal System (Pointer & Keyboard Parity) + Section Entry Reveals
   useEffect(() => {
@@ -364,13 +370,22 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
     };
   }, [qualityConfig.isStatic]);
 
-  const value: ExperienceContextValue = {
-    ...depthState,
-    qualityConfig,
-    signalState,
-    triggerSignal,
-    resetSignal,
-  };
+  const value = useMemo<ExperienceContextValue>(
+    () => ({
+      motionStore,
+      qualityConfig,
+      signalState,
+      triggerSignal,
+      resetSignal,
+    }),
+    [
+      motionStore,
+      qualityConfig,
+      signalState,
+      triggerSignal,
+      resetSignal,
+    ],
+  );
 
   return (
     <ExperienceContext.Provider value={value}>
@@ -379,10 +394,23 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const defaultExperienceFallback: ExperienceContextValue = {
+  motionStore: createExperienceMotionStore(initialDepthState),
+  qualityConfig: {
+    quality: "HIGH",
+    maxDpr: 2,
+    antialias: true,
+    isStatic: false,
+  },
+  signalState: initialSignalState,
+  triggerSignal: () => {},
+  resetSignal: () => {},
+};
+
 export function useExperience(): ExperienceContextValue {
   const context = useContext(ExperienceContext);
   if (!context) {
-    throw new Error("useExperience must be used within an <ExperienceProvider>");
+    return defaultExperienceFallback;
   }
   return context;
 }

@@ -1,6 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { site } from "@/content/site";
+import {
+  getSiteUrl,
+  isIndexableDeployment,
+} from "@/lib/seo";
+import { StructuredData } from "@/components/StructuredData";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -24,24 +29,74 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
 });
 
+const metadataBase =
+  getSiteUrl();
+
+const indexable =
+  isIndexableDeployment();
+
 export const metadata: Metadata = {
-  title: `${site.name} — ${site.tagline}`,
+  metadataBase,
+  applicationName:
+    site.name,
+  title: {
+    default:
+      `${site.name} — ${site.tagline}`,
+    template:
+      `%s — ${site.name}`,
+  },
   description:
-    "Virtus Lab is a studio that designs brands, builds websites, and ships content and automation for growing businesses abroad. One coordinated team, quality-checked work.",
+    site.seo.description,
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: `${site.name} — ${site.tagline}`,
+    title:
+      `${site.name} — ${site.tagline}`,
     description:
-      "A studio, not a stack of freelancers. Brand, web, content, and automation from one coordinated team.",
+      site.seo.socialDescription,
     type: "website",
+    url: "/",
+    siteName: site.name,
+    images: [
+      {
+        url:
+          "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt:
+          `${site.name} — ${site.tagline}`,
+      },
+    ],
+  },
+  twitter: {
+    card:
+      "summary_large_image",
+    title:
+      `${site.name} — ${site.tagline}`,
+    description:
+      site.seo.socialDescription,
+    images: [
+      "/opengraph-image",
+    ],
   },
   robots: {
-    index: true,
-    follow: true,
+    index: indexable,
+    follow: indexable,
+    googleBot: {
+      index: indexable,
+      follow: indexable,
+      "max-image-preview":
+        "large",
+      "max-snippet": -1,
+      "max-video-preview":
+        -1,
+    },
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#04171e",
+  themeColor: "#0F1B2A",
   colorScheme: "dark",
 };
 
@@ -55,7 +110,10 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${plexSans.variable} ${plexMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <StructuredData />
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,141 +1,109 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  useEffect,
+  useRef,
+  type CSSProperties,
+} from "react";
 import { site } from "@/content/site";
-import { useExperience } from "@/experience/ExperienceContext";
-import { Container, GoldRule } from "./primitives";
+import { useExperienceMotion } from "@/experience/hooks/useExperienceMotion";
+import { SECTION_DEPTHS } from "@/experience/experience-config";
+import { Container } from "./primitives";
 
-const WORK_START_DEPTH = 1600;
-const WORK_NEXT_SECTION_DEPTH = 2400;
-
-/**
- * Choreography:
- *
- * - small global opening hold so Project 01 is readable before movement begins
- * - each project has a local dwell before/after its transition
- * - small final hold so Project 05 settles before sticky release
- *
- * All timing is scroll-distance based, not time based.
- * Therefore:
- * - no delayed catch-up after scrolling stops
- * - reverse scroll naturally reverses the animation
- */
-const OPENING_HOLD = 0.045;
-const FINAL_HOLD = 0.06;
-const SEGMENT_TRANSITION_START = 0.1;
-const SEGMENT_TRANSITION_END = 0.9;
+const WORK_START_DEPTH = SECTION_DEPTHS.work;
+const WORK_NEXT_SECTION_DEPTH = SECTION_DEPTHS.services;
 
 /**
- * Horizontal work motion uses the existing global smoothed depth signal.
+ * Pure #34 postcard-wall gallery.
  *
- * 0 = completely raw / immediate
- * 1 = completely smoothed / floaty
- *
- * 0.68 keeps enough immediate response while removing mouse-wheel stepping.
+ * IMPORTANT:
+ * This packet changes project navigation only.
+ * The scroll / perspective mechanics remain the current implementation.
  */
-const WORK_DEPTH_SMOOTHING = 0.68;
+const WORK_DEPTH_SMOOTHING = 0.08;
+const MOTION_FINISH_FRACTION = 1;
 
-/**
- * Finish horizontal choreography before the physical sticky release.
- *
- * This provides enough safety for the smoothed depth signal to catch up,
- * while preserving the final Project 05 dwell.
- */
-const MOTION_FINISH_FRACTION = 0.88;
+const GALLERY_LAYOUTS = [
+  {
+    z: -150,
+    scale: 1.15,
+    y: "-7vh",
+    width: "clamp(20rem, 29vw, 29rem)",
+    aspect: "4 / 3",
+    parallax: 0.94,
+  },
+  {
+    z: 80,
+    scale: 0.92,
+    y: "5vh",
+    width: "clamp(16rem, 22vw, 22rem)",
+    aspect: "4 / 5",
+    parallax: 1.06,
+  },
+  {
+    z: -230,
+    scale: 1.22,
+    y: "-1vh",
+    width: "clamp(22rem, 34vw, 34rem)",
+    aspect: "16 / 10",
+    parallax: 0.90,
+  },
+  {
+    z: 110,
+    scale: 0.88,
+    y: "6vh",
+    width: "clamp(17rem, 24vw, 24rem)",
+    aspect: "3 / 4",
+    parallax: 1.08,
+  },
+  {
+    z: -90,
+    scale: 1.1,
+    y: "-8vh",
+    width: "clamp(20rem, 30vw, 30rem)",
+    aspect: "3 / 2",
+    parallax: 0.96,
+  },
+] as const;
+
+type WorkMetrics = {
+  travelDistance: number;
+  releaseDepth: number;
+};
+
+type WorkCardStyle = CSSProperties & {
+  "--work-x": string;
+  "--work-z": string;
+  "--work-y": string;
+  "--work-scale": number;
+  "--work-width": string;
+  "--work-aspect": string;
+};
+
+const initialMetrics: WorkMetrics = {
+  travelDistance: 0,
+  releaseDepth: WORK_NEXT_SECTION_DEPTH - 60,
+};
 
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
-}
-
-/**
- * Quintic smootherstep.
- *
- * Velocity and acceleration both approach zero at the beginning and end,
- * so project transitions feel less mechanical than cubic smoothstep.
- */
-function smootherstep(value: number): number {
-  const t = clamp01(value);
-
-  return (
-    t *
-    t *
-    t *
-    (t * (t * 6 - 15) + 10)
-  );
 }
 
 function formatIndex(index: number): string {
   return String(index + 1).padStart(2, "0");
 }
 
-/**
- * Converts 0..1 pinned scroll progress into a continuous project position:
- *
- * 0.0 = Project 01 aligned
- * 1.0 = Project 02 aligned
- * 2.0 = Project 03 aligned
- * ...
- *
- * Each integer position is a deliberate visual resting point.
- */
-function getProjectPosition(
-  pinnedProgress: number,
-  projectCount: number,
-): number {
-  if (projectCount <= 1) return 0;
-
-  if (pinnedProgress <= OPENING_HOLD) {
-    return 0;
-  }
-
-  if (pinnedProgress >= 1 - FINAL_HOLD) {
-    return projectCount - 1;
-  }
-
-  const motionProgress = clamp01(
-    (pinnedProgress - OPENING_HOLD) /
-      (1 - OPENING_HOLD - FINAL_HOLD),
-  );
-
-  const transitionCount = projectCount - 1;
-  const scaled = motionProgress * transitionCount;
-
-  const segment = Math.min(
-    transitionCount - 1,
-    Math.floor(scaled),
-  );
-
-  const localProgress = scaled - segment;
-
-  const transitionProgress = clamp01(
-    (localProgress - SEGMENT_TRANSITION_START) /
-      (SEGMENT_TRANSITION_END - SEGMENT_TRANSITION_START),
-  );
-
-  return segment + smootherstep(transitionProgress);
-}
-
-type WorkMetrics = {
-  cardOffsets: number[];
-  releaseDepth: number;
-};
-
-const initialMetrics: WorkMetrics = {
-  cardOffsets: [],
-  releaseDepth: 2250,
-};
-
 export function Work() {
-  const { rawDepth, smoothedDepth } = useExperience();
-
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const [metrics, setMetrics] =
-    useState<WorkMetrics>(initialMetrics);
+  const cardsRef = useRef<HTMLElement[]>([]);
+  const metricsRef = useRef<WorkMetrics>(initialMetrics);
+  const activeIndexTextRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -147,27 +115,37 @@ export function Work() {
 
     const measure = () => {
       const cards = Array.from(
-        track.querySelectorAll<HTMLElement>("[data-work-card]"),
+        track.querySelectorAll<HTMLElement>(
+          "[data-work-card]",
+        ),
+      );
+      cardsRef.current = cards;
+
+      const lastCard = cards.at(-1);
+      const viewportWidth = Math.max(
+        1,
+        viewport.clientWidth,
       );
 
-      const nextOffsets = cards.map((card) =>
-        Math.max(0, card.offsetLeft),
+      const nextTravelDistance = lastCard
+        ? Math.max(
+            0,
+            lastCard.offsetLeft +
+              lastCard.offsetWidth / 2 -
+              viewportWidth * 0.66,
+          )
+        : 0;
+
+      const sectionHeight = Math.max(
+        1,
+        section.offsetHeight,
       );
 
-      const sectionHeight = Math.max(1, section.offsetHeight);
       const stickyHeight = Math.min(
         sectionHeight,
         Math.max(1, sticky.offsetHeight),
       );
 
-      /**
-       * sticky scroll distance:
-       *
-       * sectionHeight - stickyHeight
-       *
-       * Convert that real physical release position back into the same
-       * 1600 -> 2400 conceptual depth interval used by ExperienceContext.
-       */
       const pinnedFraction = clamp01(
         (sectionHeight - stickyHeight) / sectionHeight,
       );
@@ -177,26 +155,26 @@ export function Work() {
         (WORK_NEXT_SECTION_DEPTH - WORK_START_DEPTH) *
           pinnedFraction;
 
-      setMetrics((current) => {
-        const offsetsChanged =
-          current.cardOffsets.length !== nextOffsets.length ||
-          current.cardOffsets.some(
-            (offset, index) =>
-              Math.abs(offset - (nextOffsets[index] ?? 0)) > 0.5,
-          );
+      const current = metricsRef.current;
+      const changed =
+        Math.abs(
+          current.travelDistance -
+            nextTravelDistance,
+        ) > 0.5 ||
+        Math.abs(
+          current.releaseDepth -
+            nextReleaseDepth,
+        ) > 0.5;
 
-        const releaseChanged =
-          Math.abs(current.releaseDepth - nextReleaseDepth) > 0.5;
-
-        if (!offsetsChanged && !releaseChanged) {
-          return current;
-        }
-
-        return {
-          cardOffsets: nextOffsets,
+      if (!changed) {
+        metricsRef.current = current;
+      } else {
+        const nextMetrics = {
+          travelDistance: nextTravelDistance,
           releaseDepth: nextReleaseDepth,
         };
-      });
+        metricsRef.current = nextMetrics;
+      }
     };
 
     measure();
@@ -215,67 +193,122 @@ export function Work() {
     };
   }, []);
 
-  const pinnedDepthSpan = Math.max(
-    1,
-    metrics.releaseDepth - WORK_START_DEPTH,
-  );
-
-  /**
-   * Keep the Work rail responsive to the real scroll position while borrowing
-   * inertia from the site's existing depth smoother.
-   *
-   * This is intentionally NOT another smooth-scroll system.
-   */
-  const motionDepth =
-    rawDepth +
-    (smoothedDepth - rawDepth) * WORK_DEPTH_SMOOTHING;
-
-  /**
-   * Because smoothedDepth trails rawDepth slightly, complete the horizontal
-   * choreography before the physical sticky release. The remainder becomes
-   * the final Project 05 hold.
-   */
-  const motionDepthSpan = Math.max(
-    1,
-    pinnedDepthSpan * MOTION_FINISH_FRACTION,
-  );
-
-  const pinnedProgress = clamp01(
-    (motionDepth - WORK_START_DEPTH) / motionDepthSpan,
-  );
-
   const projectCount = site.work.projects.length;
 
-  const projectPosition = getProjectPosition(
-    pinnedProgress,
-    projectCount,
-  );
+  useExperienceMotion(
+    ({
+      rawDepth,
+      smoothedDepth,
+    }) => {
+      const track =
+        trackRef.current;
 
-  const lowerIndex = Math.min(
-    projectCount - 1,
-    Math.floor(projectPosition),
-  );
+      if (!track) return;
 
-  const upperIndex = Math.min(
-    projectCount - 1,
-    lowerIndex + 1,
-  );
+      const currentMetrics =
+        metricsRef.current;
 
-  const localCardProgress = projectPosition - lowerIndex;
+      const pinnedDepthSpan =
+        Math.max(
+          1,
+          currentMetrics.releaseDepth -
+            WORK_START_DEPTH,
+        );
 
-  const lowerOffset =
-    metrics.cardOffsets[lowerIndex] ?? 0;
+      const motionDepth =
+        rawDepth +
+        (
+          smoothedDepth -
+          rawDepth
+        ) *
+          WORK_DEPTH_SMOOTHING;
 
-  const upperOffset =
-    metrics.cardOffsets[upperIndex] ?? lowerOffset;
+      const motionDepthSpan =
+        Math.max(
+          1,
+          pinnedDepthSpan *
+            MOTION_FINISH_FRACTION,
+        );
 
-  const translateX =
-    lowerOffset +
-    (upperOffset - lowerOffset) * localCardProgress;
+      const progress =
+        clamp01(
+          (
+            motionDepth -
+            WORK_START_DEPTH
+          ) /
+            motionDepthSpan,
+        );
 
-  const activeIndex = Math.min(
-    projectCount - 1,
-    Math.max(0, Math.round(projectPosition)),
+      const trackX =
+        currentMetrics
+          .travelDistance *
+        progress;
+
+      track.style.transform =
+        `translate3d(${
+          -trackX
+        }px, 0, 0)`;
+
+      cardsRef.current.forEach(
+        (
+          card,
+          index,
+        ) => {
+          const layout =
+            GALLERY_LAYOUTS[
+              index %
+                GALLERY_LAYOUTS.length
+            ];
+
+          const extraX =
+            -trackX *
+            (
+              layout.parallax -
+              1
+            );
+
+          card.style.setProperty(
+            "--work-x",
+            `${extraX}px`,
+          );
+        },
+      );
+
+      const count =
+        site.work.projects
+          .length;
+
+      const activeIndex =
+        Math.min(
+          count - 1,
+          Math.max(
+            0,
+            Math.round(
+              progress *
+                (
+                  count -
+                  1
+                ),
+            ),
+          ),
+        );
+
+      if (
+        activeIndexTextRef.current
+      ) {
+        activeIndexTextRef.current.textContent =
+          formatIndex(
+            activeIndex,
+          );
+
+        activeIndexTextRef.current.parentElement?.setAttribute(
+          "aria-label",
+          `Project ${
+            activeIndex + 1
+          } of ${count}`,
+        );
+      }
+    },
   );
 
   return (
@@ -289,133 +322,191 @@ export function Work() {
         ref={stickyRef}
         className="work-showcase__sticky"
       >
-        <Container className="flex h-full min-h-0 flex-col pt-16 pb-6 sm:pt-20 sm:pb-8">
+        <Container className="work-showcase__header">
           <header
             data-reveal
-            className="flex shrink-0 items-end justify-between gap-8"
+            className="flex items-end justify-between gap-8"
           >
-            <div className="max-w-[48rem]">
-              <div className="mb-3 flex items-center gap-4">
-                <GoldRule />
-
-                <span className="readout inline-flex items-center gap-2 text-tide/90">
-                  <span
-                    aria-hidden
-                    className="h-1.5 w-1.5 rounded-full bg-biolume shadow-[0_0_8px_1px_var(--color-biolume)]"
-                  />
-                  1600 m — bathypelagic
-                </span>
-              </div>
+            <div className="max-w-[50rem]">
+              <span className="readout readout-caps text-tide">
+                Portfolio
+              </span>
 
               <h2
                 id="work-title"
-                className="font-display text-[clamp(2.7rem,5.4vw,5.4rem)] leading-[0.92] tracking-[-0.035em] text-seaglass"
+                className="mt-3 font-display text-[clamp(2.8rem,5.4vw,5.6rem)] leading-[0.92] tracking-[-0.035em] text-seaglass"
               >
                 {site.work.title}
               </h2>
 
-              <p className="mt-3 max-w-[58ch] text-sm leading-relaxed text-tide sm:text-base">
+              <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-tide sm:text-base">
                 {site.work.intro}
               </p>
+
+              <p className="mt-2 max-w-[66ch] text-[0.72rem] leading-relaxed text-tide/65">
+                {site.work.note}
+              </p>
+
+              <Link
+                href="/work"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-tide transition-colors hover:text-seaglass md:hidden"
+              >
+                View all work
+                <span aria-hidden>→</span>
+              </Link>
             </div>
 
-            <div
-              className="hidden shrink-0 items-baseline gap-2 pb-1 md:flex"
-              aria-label={`Project ${activeIndex + 1} of ${projectCount}`}
-            >
-              <span className="font-mono text-2xl font-semibold tabular-nums text-biolume">
-                {formatIndex(activeIndex)}
-              </span>
+            <div className="hidden shrink-0 flex-col items-end gap-3 pb-1 md:flex">
+              <div
+                className="flex items-baseline gap-2"
+                aria-label={`Project 1 of ${projectCount}`}
+              >
+                <span
+                  ref={activeIndexTextRef}
+                  className="font-mono text-2xl font-semibold tabular-nums text-seaglass"
+                >
+                  01
+                </span>
 
-              <span className="readout text-tide/55">
-                /
-              </span>
+                <span className="readout text-shelf">
+                  /
+                </span>
 
-              <span className="readout tabular-nums text-tide/75">
-                {String(projectCount).padStart(2, "0")}
-              </span>
+                <span className="readout tabular-nums text-tide">
+                  {String(projectCount).padStart(
+                    2,
+                    "0",
+                  )}
+                </span>
+              </div>
+
+              <Link
+                href="/work"
+                className="group inline-flex items-center gap-2 text-sm font-semibold text-tide transition-colors hover:text-seaglass"
+              >
+                View all work
+                <span
+                  aria-hidden
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                >
+                  →
+                </span>
+              </Link>
             </div>
           </header>
+        </Container>
 
+        <div
+          ref={viewportRef}
+          className="work-showcase__viewport"
+        >
           <div
-            ref={viewportRef}
-            className="work-showcase__viewport mt-6 min-h-0 flex-1 sm:mt-7"
+            ref={trackRef}
+            className="work-showcase__track"
+            style={{
+              transform: "translate3d(0, 0, 0)",
+            }}
           >
-            <div
-              ref={trackRef}
-              className="work-showcase__track"
-              style={{
-                transform: `translate3d(${-translateX}px, 0, 0)`,
-              }}
-            >
-              {site.work.projects.map((project, index) => (
-                <article
-                  key={project.id}
-                  data-work-card
-                  data-experience-signal="work"
-                  data-experience-index={index}
-                  className="work-showcase__card group"
-                >
-                  <div className="work-showcase__media">
-                    <Image
-                      src={project.image}
-                      alt={project.imageAlt}
-                      fill
-                      sizes="(max-width: 767px) 86vw, (max-width: 1279px) 68vw, 52rem"
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.025]"
-                    />
+            {site.work.projects.map(
+              (project, index) => {
+                const layout =
+                  GALLERY_LAYOUTS[
+                    index %
+                      GALLERY_LAYOUTS.length
+                  ];
 
-                    <div
-                      aria-hidden
-                      className="absolute inset-0 bg-gradient-to-t from-abyss/60 via-transparent to-transparent"
-                    />
+                const cardStyle: WorkCardStyle = {
+                  "--work-x": "0px",
+                  "--work-z": `${layout.z}px`,
+                  "--work-y": layout.y,
+                  "--work-scale": layout.scale,
+                  "--work-width": layout.width,
+                  "--work-aspect": layout.aspect,
+                };
 
-                    <div className="absolute bottom-3 right-3 rounded-full border border-seaglass/15 bg-abyss/75 px-2.5 py-1 backdrop-blur-sm">
-                      <span className="readout text-[0.6rem] uppercase tracking-[0.12em] text-tide/80">
-                        {project.visualCredit}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="work-showcase__meta mt-4 grid gap-3 border-t border-shelf-dim/80 pt-3.5 sm:grid-cols-[1fr_auto] sm:items-start">
-                    <div>
-                      <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
-                        <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-biolume">
-                          {formatIndex(index)}
-                        </span>
-
-                        <span
-                          aria-hidden
-                          className="h-1 w-1 rounded-full bg-brass"
+                return (
+                  <article
+                    key={project.id}
+                    data-work-card
+                    data-has-live-url={
+                      project.liveUrl
+                        ? "true"
+                        : "false"
+                    }
+                    className="work-showcase__card"
+                    style={cardStyle}
+                  >
+                    <Link
+                      href={`/work/${project.id}`}
+                      className="work-showcase__project-link"
+                      aria-label={`View ${project.name} case study`}
+                    >
+                      <div className="work-showcase__media">
+                        <Image
+                          src={project.image}
+                          alt={project.imageAlt}
+                          fill
+                          sizes="(max-width: 767px) 82vw, (max-width: 1279px) 34vw, 32rem"
+                          className="work-showcase__image object-cover"
                         />
 
-                        <span className="readout text-[0.66rem] uppercase tracking-[0.12em] text-tide/75">
-                          {project.kind}
-                        </span>
+                        <div
+                          aria-hidden
+                          className="work-showcase__image-shade"
+                        />
+
+                        <div className="work-showcase__credit">
+                          <span className="readout text-[0.56rem] uppercase tracking-[0.12em] text-tide">
+                            {project.visualCredit}
+                          </span>
+                        </div>
+
+                        <div className="work-showcase__case-action">
+                          <span className="readout readout-caps text-seaglass">
+                            View case study →
+                          </span>
+                        </div>
+
+                        <div className="work-showcase__title-overlay">
+                          <div className="flex items-center gap-2.5">
+                            <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-seaglass/78">
+                              {formatIndex(index)}
+                            </span>
+
+                            <span
+                              aria-hidden
+                              className="h-px w-4 bg-seaglass/45"
+                            />
+
+                            <span className="readout text-[0.58rem] uppercase tracking-[0.12em] text-seaglass/72">
+                              {project.pillar}
+                            </span>
+                          </div>
+
+                          <h3 className="mt-1.5 font-display text-[clamp(1.2rem,1.7vw,1.75rem)] leading-none tracking-[-0.02em] text-seaglass">
+                            {project.name}
+                          </h3>
+                        </div>
                       </div>
+                    </Link>
 
-                      <h3 className="font-display text-[clamp(1.55rem,2.5vw,2.65rem)] leading-[0.98] tracking-[-0.025em] text-seaglass transition-colors duration-200 group-hover:text-biolume">
-                        {project.name}
-                      </h3>
-
-                      <p className="mt-1.5 text-sm font-medium text-brass/90">
-                        {project.pillar}
-                      </p>
-
-                      <p className="mt-2 max-w-[58ch] text-[0.84rem] leading-relaxed text-tide">
-                        {project.desc}
-                      </p>
-                    </div>
-
-                    <span className="readout tabular-nums text-tide/65">
-                      {project.depth}
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
+                    {project.liveUrl ? (
+                      <a
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="work-showcase__live-link"
+                        aria-label={`Visit ${project.name} live site`}
+                      >
+                        Live site ↗
+                      </a>
+                    ) : null}
+                  </article>
+                );
+              },
+            )}
           </div>
-        </Container>
+        </div>
       </div>
     </section>
   );
